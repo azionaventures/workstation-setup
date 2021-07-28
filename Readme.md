@@ -15,6 +15,7 @@ Install all depends and configuration for project maintenance
 ### Customization
 
 setup your osx
+
     export CONFIG_TENANT_SETTINGS_PATH=/PATH/TO/$ORGANIZATION_NAME-tenant-settings
     make setup
     source <(setkubeconfig $ORGANIZATION_NAME {cluster_environment})
