@@ -1,0 +1,104 @@
+#!/bin/bash
+
+##
+# Esegue un container all'interno di un pod, richiede il setkubeconfig
+# 
+# INPUT:
+#   - Nome pod (environment viene inserito in automatico)
+#   - Nome container (opzionale, default: nome pod)
+#   - comando da eseguire (opzionale, default: bash)
+##
+
+source $HOME/var/workstation-setup/base.sh
+
+showHelp() {
+   echo "Esecuzione container all'interno del pod"
+   echo
+   echo "Syntax: setup.sh [ -p;--pod-name | -c;--container-name | --cmd | -h;--help ]"
+   echo "options:"
+   echo "-h | --help            : Print help"
+   echo "-p | --pod-name        : Nome del pod"
+   echo "-c | --container-name  : Nome container da eseguire"
+   echo "--cmd                  : Comando che viene eseguito nel container [ DEFAULT -> bash]"
+   echo
+}
+
+parser() {
+  options=$(getopt -l "help,pod-name:,container-name:,cmd:" -o "h p: c:" -a -- "$@")
+  eval set -- "$options"
+
+  while true
+      do
+      case $1 in
+          -h|--help)
+              showHelp 
+              exit 0
+              ;;
+          -p|--pod-name)
+              POD_NAME="${2}"
+              ;;
+          -c|--container-name)
+              CONTAINER_NAME="${2}"
+              ;;
+          --cmd)
+              CMD="${2}"
+              ;;
+          --)
+              shift
+              break;;
+      esac
+      shift
+  done
+  shift "$(($OPTIND -1))"
+
+  [[ "${POD_NAME:-}" != "" ]] || (echo 'Args: --pod-name [required]' && exit 1)
+  [[ "${CONTAINER_NAME:-}" != "" ]] || (echo 'Args: --container-name [required]' && exit 1)
+
+  if [ -z "${CMD:-}" ] ; then
+    CMD="bash"
+  fi
+}
+
+_exec() {
+  local -a _pods=$(kubectl get pods -o NAME | { grep -i "${POD_NAME}" || true; })
+  if [ "${_pods}" == "" ] ; then
+    echo "Non trovato il/i pod; ${POD_NAME}"
+    exit 0
+  else
+    _pods=($(echo "${_pods}"))
+  fi
+  
+  local i=0
+  if [ ${#_pods[@]} -gt 1 ] ; then
+    echo "Sono stati trovati ${#_pods[@]} pods che corrispondono al pod name indicato"
+    for _item in "${_pods[@]}"
+    do
+      echo "[${i}] ${_item}"
+      let i=i+1
+    done
+    read -rp 'Scegli il Pod, indica un numero per selezionare: ' index
+
+    if [[ ${index} -gt ${#_pods[@]} || ${index} -lt 0 ]] ; then
+      echo 'Indice errato' && exit 1
+    fi
+    _pod=${_pods[${index}]}
+  else
+    _pod=${_pods}
+  fi
+  
+  _pod=${_pod/"pod"\//}
+  echo "Esecuzione pod: $_pod"
+
+  if [ "${_pod}" != "" ] ; then
+    kubectl exec -it "${_pod}" -c "${CONTAINER_NAME}" -- "${CMD}"
+  else
+    echo "Pod ${POD_NAME} not found"
+  fi
+}
+
+main(){
+  parser "$@"
+  _exec
+}
+
+main "$@"

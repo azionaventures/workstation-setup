@@ -1,0 +1,39 @@
+#!/bin/bash
+
+TEMPLATE=$1
+shift 1
+
+if [ "$(uname)" == "Darwin" ]; then
+    WORKSPACE_PREFIX=${PROJECTS_PREFIX:-"/Users/$(whoami)/Documents/projects"}/$COMPANY
+    if [ ! "$(which aziona)" ]; then
+        DEVOPS_PATH=${AZIONA_PREFIX:-"${PROJECTS_PREFIX:-"/Users/$(whoami)/Documents/projects"}/azionaventures"}/aziona-cli
+        export TERRAFORM_PATH=$DEVOPS_PATH/terraform
+        source ${DEVOPS_PATH}/venv/bin/activate
+    fi
+elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+    WORKSPACE_PREFIX=${PROJECTS_PREFIX:-"/opt/project"}/$COMPANY
+    if [ ! "$(which aziona)" ]; then
+        DEVOPS_PATH=${AZIONA_PREFIX:-"${PROJECTS_PREFIX:-"/opt/project"}/azionaventures"}/aziona-cli
+        export TERRAFORM_PATH=$DEVOPS_PATH/terraform
+        source ${DEVOPS_PATH}/venv/bin/activate
+    fi
+elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+    echo "Pls install Linux lol"
+elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW64_NT" ]; then
+     echo "Pls install Linux lol"
+else
+    echo "Unknown os"
+    exit 1
+fi
+
+TENANT=$ENVIRONMENT
+if [ -z "${CONFIG_TENANT_SETTINGS_PATH:-}" ]; then 
+    export $(grep -v '^#' $WORKSPACE_PREFIX/config/$COMPANY-tenant-settings/$TENANT/.env | xargs)
+else
+    export $(grep -v '^#' $CONFIG_TENANT_SETTINGS_PATH/$TENANT/.env | xargs)
+fi
+CONF_FILE=$WORKSPACE_PREFIX/config/$COMPANY-tenant-settings/$TENANT/settings.tfvars
+SECRETS_FILE=$WORKSPACE_PREFIX/secrets/$COMPANY-secrets-$TENANT/$COMPANY-terraform-secrets.tfvars
+
+echo "aziona -f ${INFRASTRUCTURE_PATH:-"$AZIONA_PREFIX/infrastructure"}/template/$TEMPLATE.yml $@"
+aziona -f ${INFRASTRUCTURE_PATH:-"$AZIONA_PREFIX/infrastructure"}/template/$TEMPLATE.yml $@

@@ -1,0 +1,49 @@
+#!/bin/bash
+
+##
+# Setta le configurazione TENANT degli applicativi
+# 
+# INPUT:
+#   - Nome applicativo
+#   - Url repository delle variabili di config
+##
+
+source $HOME/var/workstation-setup/base.sh
+
+getargs() {
+
+  if [ -z ${1:-} ] ; then
+    read -p 'App name: ' COMPANY
+  else 
+    COMPANY=${1}
+  fi
+  [[ "$COMPANY" != "" ]] || (echo 'COMPANY not valid' && exit 1)
+
+
+  if [ -z ${2:-} ] ; then
+    read -p 'Url repository TENANT: ' URL_REPO_TENANT
+  else 
+    URL_REPO_TENANT=${2}
+  fi
+  [[ "$URL_REPO_TENANT" != "" ]] || (echo 'URL_REPO_TENANT not valid' && exit 1)
+}
+
+setapp() {
+  local _path="${WORKDIR}/${COMPANY}/config"
+
+  if [ -d ${_path} ] ; then
+    warn "Path ${_path} exist"
+    return
+  fi
+
+  mkdir -p ${_path}
+  cd ${_path}
+  git clone ${URL_REPO_TENANT}
+}
+
+main() {
+  getargs $@
+  setapp
+}
+
+main $@
