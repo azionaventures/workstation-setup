@@ -47,6 +47,7 @@ depends() {
     echo "[INFO] Install K8S"
     if [ "$(uname)" == "Darwin" ]; then
       brew install kubectl
+      brew install kustomize
     elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
       sudo curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl  
       sudo chmod +x ./kubectl 
