@@ -68,14 +68,16 @@ getargs_osx() {
 main() {
   if [ "$(uname)" == "Darwin" ]; then
     getargs_osx "$@"
+    aziona-environment $arg_COMPANY $arg_ENV
+    aziona-aws-assume-role $arg_COMPANY $arg_ENV $arg_ROLE
   elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
     getargs "$@"
+    aziona-environment --company $arg_COMPANY --env $arg_ENV
+    aziona-aws-assume-role --company $arg_COMPANY --env $arg_ENV --role $arg_ROLE
   else
       echo "OS not valid"
       exit 1
   fi
-  aziona-environment --company $arg_COMPANY --env $arg_ENV
-  aziona-aws-assume-role --company $arg_COMPANY --env $arg_ENV --role $arg_ROLE
 }
 
 main "$@"

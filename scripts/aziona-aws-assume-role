@@ -65,14 +65,14 @@ getargs_osx() {
 main() {
   if [ "$(uname)" == "Darwin" ]; then
     getargs_osx "$@"
+    source <( aziona-environment $arg_COMPANY $arg_ENV )
   elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
     getargs "$@"
+    source <( aziona-environment --company $arg_COMPANY --env $arg_ENV )
   else
       echo "OS not valid"
       exit 1
   fi
-
-  source <( aziona-environment --company $arg_COMPANY --env $arg_ENV )
 
   # Assume role aws
   local res=$(aws --profile $ORGANIZATION_NAME sts assume-role --role-arn arn:aws:iam::$ACCOUNT_ID:role/"${arg_ROLE}" --role-session-name "${arg_ROLE}"-cli | jq -r '.Credentials')
