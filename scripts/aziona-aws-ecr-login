@@ -53,8 +53,26 @@ getargs() {
   [[ "${arg_PROFILE:-}" != "" ]] || (echo 'Args: -p or --profile [required]' && exit 1)
 }
 
+getargs_osx() {
+  arg_COMPANY=${1:-}
+  arg_ENV=${2:-}
+  arg_PROFILE=${3:-}
+
+  [[ "${arg_COMPANY:-}" != "" ]] || (echo 'Args: -c or --company [required]' && exit 1)
+  [[ "${arg_ENV:-}" != "" ]] || (echo 'Args: -e or --env [required]' && exit 1)
+  [[ "${arg_PROFILE:-}" != "" ]] || (echo 'Args: -p or --profile [required]' && exit 1)
+}
+
 main() {
-  getargs "$@"
+  if [ "$(uname)" == "Darwin" ]; then
+    getargs_osx "$@"
+  elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+    getargs "$@"
+  else
+      echo "OS not valid"
+      exit 1
+  fi
+
   source <( setkubeconfig $arg_COMPANY $arg_ENV )
   aws --profile "${arg_PROFILE}" ecr get-login-password --region "${ECR_AWS_REGION}" | docker login --username AWS --password-stdin "${ECR_ACCOUNT_ID}".dkr.ecr."${ECR_AWS_REGION}".amazonaws.com
 }

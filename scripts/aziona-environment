@@ -57,6 +57,14 @@ getargs() {
   [[ "${arg_ENV:-}" != "" ]] || (echo 'Args: -e or --env [required]' && exit 1)
 }
 
+getargs_osx() {
+  arg_COMPANY=${1:-}
+  arg_ENV=${2:-}
+
+  [[ "${arg_COMPANY:-}" != "" ]] || (echo 'Args: -c or --company [required]' && exit 1)
+  [[ "${arg_ENV:-}" != "" ]] || (echo 'Args: -e or --env [required]' && exit 1)
+}
+
 _darwin(){
   if [ -z "${arg_CONFIG_PATH:-}" ]; then 
     WORKSPACE_PREFIX=${PROJECTS_PREFIX:-"/Users/$(whoami)/Documents/projects"}/${arg_COMPANY}
@@ -106,8 +114,17 @@ setconfig() {
   echo "source ${DEVOPS_PATH}/venv/bin/activate > /dev/null 2>&1"
 }
 
+
 main() {
-  getargs "$@"
+  if [ "$(uname)" == "Darwin" ]; then
+    getargs_osx "$@"
+  elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+    getargs "$@"
+  else
+      echo "OS not valid"
+      exit 1
+  fi
+
   setconfig
 }
 

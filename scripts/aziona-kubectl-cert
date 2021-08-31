@@ -57,9 +57,24 @@ getargs() {
   fi
 }
 
+getargs_osx() {
+  arg_COMPANY=${1:-}
+  arg_COMPANY=${2:-}
+  arg_PROFILE=${3:-""}
+
+  [[ "${arg_COMPANY:-}" != "" ]] || (echo 'Args: -c or --company [required]' && exit 1)
+  [[ "${arg_ENV:-}" != "" ]] || (echo 'Args: -e or --env [required]' && exit 1)
+}
 
 main() {
-  getargs "$@"
+  if [ "$(uname)" == "Darwin" ]; then
+    getargs_osx "$@"
+  elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+    getargs "$@"
+  else
+      echo "OS not valid"
+      exit 1
+  fi
    
   if [ "${arg_PROFILE}" != "" ] ; then
     source <( aziona-environment --company $arg_COMPANY --env $arg_ENV )
