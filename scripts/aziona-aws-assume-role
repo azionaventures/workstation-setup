@@ -1,0 +1,69 @@
+#!/bin/bash
+
+##
+# Crea la configurazione eks
+##
+
+
+source "${HOME}/var/workstation-setup/base.sh"
+
+showHelp() {
+   echo "Esecuzione container all'interno del pod"
+   echo
+   echo "Syntax: setup.sh [ -c;--company | -e;--env | -r;--role | -h;--help ]"
+   echo "options:"
+   echo "-h | --help      : Print help"
+   echo "-e | --env       : Environment tentants"
+   echo "-c | --company   : Nome company"
+   echo "-r | --role      : Aws role [default: eks-console-staging]"
+   echo
+}
+
+getargs() {
+  options=$(getopt -l "help,company:,env:,role:" -o "h e: c: r:" -a -- "$@")
+  eval set -- "$options"
+
+  while true
+      do
+      case $1 in
+          -h|--help)
+              showHelp 
+              exit 0
+              ;;
+          -e|--env)
+              arg_ENV="${2}"
+              ;;
+          -c|--company)
+              arg_COMPANY="${2}"
+              ;;
+          -r|--role)
+              arg_ROLE="${2}"
+              ;;
+          --)
+              shift
+              break;;
+      esac
+      shift
+  done
+  shift "$(($OPTIND -1))"
+
+  [[ "${arg_COMPANY:-}" != "" ]] || (echo 'Args: -c or --company [required]' && exit 1)
+  [[ "${arg_ENV:-}" != "" ]] || (echo 'Args: -e or --env [required]' && exit 1)
+  [[ "${arg_ROLE:-}" != "" ]] || (echo 'Args: -r or --role [required]' && exit 1)
+}
+
+
+main() {
+  getargs "$@"
+  source <( aziona-environment --company $arg_COMPANY --env $arg_ENV )
+
+  # Assume role aws
+  local res=$(aws --profile $ORGANIZATION_NAME sts assume-role --role-arn arn:aws:iam::$ACCOUNT_ID:role/"${arg_ROLE}" --role-session-name "${arg_ROLE}"-cli | jq -r '.Credentials')
+
+  # Export
+  echo "export AWS_ACCESS_KEY_ID=$(echo $res | jq .AccessKeyId)"
+  echo "export AWS_SESSION_TOKEN=$(echo $res | jq .SessionToken)"
+  echo "export AWS_SECRET_ACCESS_KEY=$(echo $res | jq .SecretAccessKey)"
+}
+
+main "$@"
