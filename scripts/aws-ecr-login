@@ -1,3 +1,34 @@
 #!/bin/bash
 
-aws --profile $ORGANIZATION_NAME ecr get-login-password --region $ECR_AWS_REGION | docker login --username AWS --password-stdin $ECR_ACCOUNT_ID.dkr.ecr.$ECR_AWS_REGION.amazonaws.com
+##
+# Login aws
+##
+
+if [ "$(uname)" != "Darwin" ] && [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+  source "${HOME}/var/workstation-setup/base.sh"
+fi
+
+getargs() {
+  if [ -z ${1:-} ] ; then
+    read -p 'App name: ' arg_COMPANY
+  else 
+    arg_COMPANY=${1}
+  fi
+  [[ "$arg_COMPANY" != "" ]] || (echo 'arg_COMPANY not valid' && exit 1)
+
+
+  if [ -z ${2:-} ] ; then
+    read -p 'Env name (staging or production): ' arg_TENANT
+  else 
+    arg_TENANT=${2}
+  fi
+  [[ "$arg_TENANT" != "" ]] || (echo 'arg_TENANT not valid' && exit 1)
+}
+
+main() {
+  getargs "$@"
+  source <( setkubeconfig $arg_COMPANY $arg_TENANT )
+  aws --profile "${ORGANIZATION_NAME}" ecr get-login-password --region "${ECR_AWS_REGION}" | docker login --username AWS --password-stdin "${ECR_ACCOUNT_ID}".dkr.ecr."${ECR_AWS_REGION}".amazonaws.com
+}
+
+main "$@"
