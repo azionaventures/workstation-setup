@@ -1,3 +1,0 @@
-#!/bin/bash
-
-aws --profile $ORGANIZATION_NAME ecr get-login-password --region $ECR_AWS_REGION | docker login --username AWS --password-stdin $ECR_ACCOUNT_ID.dkr.ecr.$ECR_AWS_REGION.amazonaws.com

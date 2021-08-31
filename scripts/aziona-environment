@@ -1,0 +1,131 @@
+#!/bin/bash
+
+##
+# Setta le variabili d'ambiente in base all'applicativo e all'env scelto
+# 
+# INPUT:
+#   - Nome applicativo
+#   - Nome env
+##
+
+
+
+source "${HOME}/var/workstation-setup/base.sh"
+
+
+showHelp() {
+   echo "Esecuzione container all'interno del pod"
+   echo
+   echo "Syntax: setup.sh [ -c;--company | -e;--env | --config-path | -h;--help ]"
+   echo "options:"
+   echo "-h | --help      : Print help"
+   echo "-e | --env       : Environment tentants"
+   echo "-c | --company   : Nome company"
+   echo "--config-path    : Config path"
+   echo
+}
+
+getargs() {
+  options=$(getopt -l "help,company:,env:,config-path" -o "h e: c:" -a -- "$@")
+  eval set -- "$options"
+
+  while true
+      do
+      case $1 in
+          -h|--help)
+              showHelp 
+              exit 0
+              ;;
+          -e|--env)
+              arg_ENV="${2}"
+              ;;
+          -c|--company)
+              arg_COMPANY="${2}"
+              ;;
+          --config-path)
+              arg_CONFIG_PATH="${2}"
+              ;;
+          --)
+              shift
+              break;;
+      esac
+      shift
+  done
+  shift "$(($OPTIND -1))"
+
+  [[ "${arg_COMPANY:-}" != "" ]] || (echo 'Args: -c or --company [required]' && exit 1)
+  [[ "${arg_ENV:-}" != "" ]] || (echo 'Args: -e or --env [required]' && exit 1)
+}
+
+getargs_osx() {
+  arg_COMPANY=${1:-}
+  arg_ENV=${2:-}
+
+  [[ "${arg_COMPANY:-}" != "" ]] || (echo 'Args: -c or --company [required]' && exit 1)
+  [[ "${arg_ENV:-}" != "" ]] || (echo 'Args: -e or --env [required]' && exit 1)
+}
+
+_darwin(){
+  if [ -z "${arg_CONFIG_PATH:-}" ]; then 
+    WORKSPACE_PREFIX=${PROJECTS_PREFIX:-"/Users/$(whoami)/Documents/projects"}/${arg_COMPANY}
+    export $(grep -v '^#' $WORKSPACE_PREFIX/config/${arg_COMPANY}-tenant-settings/${arg_ENV}/.env | xargs)
+  else
+    export $(grep -v '^#' $arg_CONFIG_PATH/${arg_ENV}/.env | xargs)
+  fi
+
+  export KUBECONFIG=/Users/$(whoami)/.kube/eksctl/clusters/$EKS_CLUSTER_NAME
+
+  if [ -z "${AZIONA_PREFIX:-}" ]; then
+    export AZIONA_PREFIX="/Users/$(whoami)/Documents/projects/azionaventures"
+  fi
+}
+
+_linux(){
+  WORKSPACE_PREFIX=${PROJECTS_PREFIX:-"/opt/project"}/${arg_COMPANY}
+  export $(grep -v '^#' $WORKSPACE_PREFIX/config/${arg_COMPANY}-tenant-settings/${arg_ENV}/.env | xargs)
+  export KUBECONFIG=/home/$(whoami)/.kube/eksctl/clusters/$EKS_CLUSTER_NAME
+
+  if [ -z "${AZIONA_PREFIX:-}" ]; then
+    export AZIONA_PREFIX="/opt/project/azionaventures"
+  fi
+}
+
+setconfig() {
+  if [ "$(uname)" == "Darwin" ]; then
+    _darwin
+  elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+    _linux
+  else
+      echo "OS not valid"
+      exit 1
+  fi
+
+  if [ -z "${arg_CONFIG_PATH:-}" ]; then
+    echo "$(grep -v '^#' $WORKSPACE_PREFIX/config/${arg_COMPANY}-tenant-settings/${arg_ENV}/.env | xargs -L1 | sed -e 's/^/export /')"
+  else
+    echo "$(grep -v '^#' $arg_CONFIG_PATH/${arg_ENV}/.env | xargs -L1 | sed -e 's/^/export /')"
+  fi
+  echo "export KUBECONFIG=$KUBECONFIG"
+
+  local DEVOPS_PATH=${AZIONA_PREFIX:-"/opt/project/azionaventures"}/aziona-cli
+  echo "export DEVOPS_PATH=${DEVOPS_PATH}"
+  echo "export INFRASTRUCTURE_PATH=${AZIONA_PREFIX:-"/opt/project/azionaventures"}/infrastructure"
+  echo "export DEVOPS_TERRAFORM_TEMPLATE_PATH=${DEVOPS_PATH}/terraform"
+  echo "source ${DEVOPS_PATH}/venv/bin/activate > /dev/null 2>&1"
+}
+
+
+main() {
+  if [ "$(uname)" == "Darwin" ]; then
+    getargs_osx "$@"
+  elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+    getargs "$@"
+  else
+      echo "OS not valid"
+      exit 1
+  fi
+
+  setconfig
+}
+
+main "$@"
