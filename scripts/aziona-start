@@ -58,7 +58,7 @@ getargs() {
 
 getargs_osx() {
   arg_COMPANY=${1:-}
-  arg_COMPANY=${2:-}
+  arg_ENV=${2:-}
   arg_ROLE=${3:-"eks-console-staging"}
 
   [[ "${arg_COMPANY:-}" != "" ]] || (echo 'Args: -c or --company [required]' && exit 1)
