@@ -23,6 +23,8 @@ elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
 fi
 PATH_CONF=$HOME/var/$NAME
 PATH_BIN=$HOME/bin
+PATH_AZIONA=$HOME/.aziona
+PATH_AZIONA_TERRAFORM_MODULE=${PATH_AZIONA}/terraform-modules
 ONLY_SCRIPTS=false
 ONLY_DEPENDS=false
 
@@ -196,6 +198,14 @@ configuration() {
   fi 
   cp -Rv scripts/* "$PATH_BIN"
   chmod -R 754 "$PATH_BIN"
+
+  if [ ! -d "${PATH_AZIONA}" ] ; then
+    mkdir -pv "${PATH_AZIONA}"
+  fi
+
+  if [ ! -d "${PATH_AZIONA_TERRAFORM_MODULE}" ] ; then
+    git clone https://github.com/azionaventures/aziona-terraform-modules.git "${PATH_AZIONA_TERRAFORM_MODULE}"
+  fi
 }
 
 parser() {

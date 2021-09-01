@@ -143,7 +143,7 @@ def main():
     add_to_export("AWS_PROFILE", args.aws_profile)
     add_to_export("KUBECONFIG","/home/%s/.kube/eksctl/clusters/%s" % (getpass.getuser(),os.getenv("EKS_CLUSTER_NAME", "")))
     add_to_export("INFRASTRUCTURE_PATH", args.aziona_path + "/infrastructure")
-    add_to_export("AZIONA_TERRAFORM_TEMPLATE_PATH", args.aziona_path + "/aziona-cli-terraform")
+    add_to_export("AZIONA_TERRAFORM_MODULES_PATH", "/home/%s/.aziona/terraform-modules" % getpass.getuser())
 
     assume_role(args.aws_profile, os.getenv("ACCOUNT_ID"), args.aws_role)
 
