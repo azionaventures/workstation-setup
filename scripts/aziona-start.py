@@ -1,0 +1,159 @@
+#!/usr/bin/env python3
+
+import sys
+import argparse
+import os
+import platform
+import getpass
+import subprocess
+import json
+
+EXPORT = ""
+
+def argsinstance():
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-e",
+        "--env",
+        required=True,
+        type=str,
+        help="Env tenant",
+    )
+    parser.add_argument(
+        "-c",
+        "--company",
+        required=True,
+        type=str,
+        help="Env tenant",
+    )
+    parser.add_argument(
+        "--config-path",
+        required=False,
+        default=None,
+        type=str,
+        help="Env tenant",
+    )
+    parser.add_argument(
+        "--aziona-path",
+        required=False,
+        default=None,
+        type=str,
+        help="Env tenant",
+    )
+    parser.add_argument(
+        "--aws-role",
+        required=False,
+        default=None,
+        type=str,
+        help="Env tenant",
+    )
+    parser.add_argument(
+        "--aws-profile",
+        required=False,
+        default=None,
+        type=str,
+        help="Env tenant",
+    )
+    return parser
+
+def default_aws_role():
+    return "eks-console-staging"
+
+def default_config_path(company):
+  if platform.system() == "Darwin":
+    return "/Users/"+getpass.getuser()+"/Documents/projects/" + company + "/config"
+
+  if platform.system() == "Linux":
+    return "/opt/project/" + company + "/config"
+
+def default_aziona_path():
+  if platform.system() == "Darwin":
+    return "/Users/"+getpass.getuser()+"/Documents/projects/azionaventures"
+
+  if platform.system() == "Linux":
+    return "/opt/project/azionaventures"
+
+def add_to_export(name,value):
+    global EXPORT
+    EXPORT += f"export {name}={value}\n"
+    os.environ[name] = value
+
+def assume_role(profile, account_id, role):
+    command = "aws --profile %s sts assume-role --role-arn arn:aws:iam::%s:role/%s --role-session-name %s-cli" % (
+        profile,
+        account_id,
+        role,
+        role)
+
+    try:
+        response = subprocess.check_output(command, shell=True)
+        r = json.loads(response.decode().replace("\n", ""))
+
+        add_to_export("AWS_ACCESS_KEY_ID", r["Credentials"]["AccessKeyId"])
+        add_to_export("AWS_SESSION_TOKEN", r["Credentials"]["SessionToken"])
+        add_to_export("AWS_SECRET_ACCESS_KEY", r["Credentials"]["SecretAccessKey"])
+    except subprocess.CalledProcessError as e:
+        raise e
+
+def kube_cert(cluster, region, kubeconfig_path):
+    p = subprocess.run("eksctl utils write-kubeconfig --cluster %s --region %s --kubeconfig %s" % ( 
+        cluster,
+        region,
+        kubeconfig_path
+    ), stderr=subprocess.PIPE, stdout=subprocess.PIPE, shell=True)
+    if p.returncode != 0:
+        raise Exception(p.stderr.decode())
+
+def main():
+    args = argsinstance().parse_args()
+
+    # Check args input
+    if args.config_path is None:
+        args.config_path = os.getenv("CONFIG_TENANT_SETTINGS_PATH", default_config_path(args.company))
+
+    if args.aziona_path is None:
+        args.aziona_path = os.getenv("AZIONAVENTURES_PATH", default_aziona_path())
+
+    if args.aws_role is None:
+        args.aws_role = os.getenv("AWS_ROLE", default_aws_role())
+
+    if os.path.isdir(args.config_path) is False:
+        raise Exception("Tenant directory not found: " + args.config_path)
+
+    # file .env tenant
+    tenant_path = "%s/%s-tenant-settings/%s/.env" % (args.config_path,args.company,args.env)
+    if os.path.isfile(tenant_path) is False:
+        raise Exception("Tenant file not exist: " + tenant_path)
+
+    # import file .env in os and to EXPORT var
+    with open(tenant_path, "r") as f:
+        for line in f.read().split("\n"):
+            if line.startswith("#") or line == "":
+                continue
+            name, value = line.split("=")
+            add_to_export(name,value)
+    
+    if args.aws_profile is None:
+        args.aws_profile = os.getenv("ORGANIZATION_NAME", "")
+        
+    add_to_export("CONFIG_TENANT_SETTINGS_PATH",args.config_path)
+    add_to_export("AZIONAVENTURES_PATH",args.aziona_path)
+    add_to_export("AWS_ROLE",args.aws_role)
+    add_to_export("AWS_PROFILE", args.aws_profile)
+    add_to_export("KUBECONFIG","/home/%s/.kube/eksctl/clusters/%s" % (getpass.getuser(),os.getenv("EKS_CLUSTER_NAME", "")))
+    add_to_export("INFRASTRUCTURE_PATH", args.aziona_path + "/infrastructure")
+    add_to_export("AZIONA_TERRAFORM_TEMPLATE_PATH", args.aziona_path + "/aziona-cli-terraform")
+
+    assume_role(args.aws_profile, os.getenv("ACCOUNT_ID"), args.aws_role)
+
+    kube_cert(os.getenv("EKS_CLUSTER_NAME"), os.getenv("EKS_AWS_REGION"), os.getenv("KUBECONFIG"))
+
+    global EXPORT
+    EXPORT += "source " + args.aziona_path  + "/aziona-cli/venv/bin/activate > /dev/null 2>&1"
+
+    print(EXPORT)
+
+
+if __name__ == "__main__":
+    sys.exit(main())
