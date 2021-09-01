@@ -61,6 +61,7 @@ getargs_osx() {
   arg_COMPANY=${1:-}
   arg_ENV=${2:-}
   arg_PROFILE=${3:-""}
+  arg_CONFIG_PATH=${4:-${CONFIG_TENANT_SETTINGS_PATH:-}}
 
   [[ "${arg_COMPANY:-}" != "" ]] || (echo 'Args: -c or --company [required]' && exit 1)
   [[ "${arg_ENV:-}" != "" ]] || (echo 'Args: -e or --env [required]' && exit 1)
@@ -70,7 +71,7 @@ main() {
   if [ "$(uname)" == "Darwin" ]; then
     getargs_osx "$@"
     if [ "${arg_PROFILE}" != "" ] ; then
-      source <( aziona-environment $arg_COMPANY $arg_ENV )
+      source <( aziona-environment $arg_COMPANY $arg_ENV ${arg_CONFIG_PATH})
       eksctl utils write-kubeconfig --profile "${arg_PROFILE}" --cluster "${EKS_CLUSTER_NAME}" --region "${EKS_AWS_REGION}" --kubeconfig "${KUBECONFIG}"
     else
       source <( aziona-start $arg_COMPANY $arg_ENV )
