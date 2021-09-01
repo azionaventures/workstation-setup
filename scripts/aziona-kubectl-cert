@@ -21,7 +21,7 @@ showHelp() {
 }
 
 getargs() {
-  options=$(getopt -l "help,company:,env:,profile:" -o "h e: c: p:" -a -- "$@")
+  options=$(getopt -l "help,company:,env:,profile:,config-path:" -o "h e: c: p:" -a -- "$@")
   eval set -- "$options"
 
   while true
@@ -40,6 +40,9 @@ getargs() {
           -p|--profile)
               arg_PROFILE="${2}"
               ;;
+          --config-path)
+              arg_CONFIG_PATH="${2}"
+              ;;
           --)
               shift
               break;;
@@ -54,6 +57,11 @@ getargs() {
   # Default profile
   if [ -z "${arg_PROFILE:-}" ] ; then
     arg_PROFILE=""
+  fi
+
+  # Default config path
+  if [ -z "${arg_PROFILE:-}" ] ; then
+    arg_CONFIG_PATH=${CONFIG_TENANT_SETTINGS_PATH:-}
   fi
 }
 
@@ -74,16 +82,16 @@ main() {
       source <( aziona-environment $arg_COMPANY $arg_ENV ${arg_CONFIG_PATH})
       eksctl utils write-kubeconfig --profile "${arg_PROFILE}" --cluster "${EKS_CLUSTER_NAME}" --region "${EKS_AWS_REGION}" --kubeconfig "${KUBECONFIG}"
     else
-      source <( aziona-start $arg_COMPANY $arg_ENV )
+      source <( aziona-start $arg_COMPANY $arg_ENV "eks-console-staging" ${arg_CONFIG_PATH})
       eksctl utils write-kubeconfig --cluster "${EKS_CLUSTER_NAME}" --region "${EKS_AWS_REGION}" --kubeconfig "${KUBECONFIG}"
     fi
   elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
     getargs "$@"
     if [ "${arg_PROFILE}" != "" ] ; then
-      source <( aziona-environment --company $arg_COMPANY --env $arg_ENV )
+      source <( aziona-environment --company $arg_COMPANY --env $arg_ENV --config-path ${arg_CONFIG_PATH})
       eksctl utils write-kubeconfig --profile "${arg_PROFILE}" --cluster "${EKS_CLUSTER_NAME}" --region "${EKS_AWS_REGION}" --kubeconfig "${KUBECONFIG}"
     else
-      source <( aziona-start --company $arg_COMPANY --env $arg_ENV )
+      source <( aziona-start --company $arg_COMPANY --env $arg_ENV --config-path ${arg_CONFIG_PATH})
       eksctl utils write-kubeconfig --cluster "${EKS_CLUSTER_NAME}" --region "${EKS_AWS_REGION}" --kubeconfig "${KUBECONFIG}"
     fi
   else

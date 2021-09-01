@@ -20,7 +20,7 @@ showHelp() {
 }
 
 getargs() {
-  options=$(getopt -l "help,company:,env:,role:" -o "h e: c: r:" -a -- "$@")
+  options=$(getopt -l "help,company:,env:,role:,config-path:" -o "h e: c: r:" -a -- "$@")
   eval set -- "$options"
 
   while true
@@ -39,6 +39,9 @@ getargs() {
           -r|--role)
               arg_ROLE="${2}"
               ;;
+          --config-path)
+              arg_CONFIG_PATH="${2}"
+              ;;
           --)
               shift
               break;;
@@ -54,12 +57,18 @@ getargs() {
   if [ -z "${arg_ROLE:-}" ] ; then
     arg_ROLE="eks-console-staging"
   fi
+
+  # Default config path
+  if [ -z "${arg_PROFILE:-}" ] ; then
+    arg_CONFIG_PATH=${CONFIG_TENANT_SETTINGS_PATH:-}
+  fi
 }
 
 getargs_osx() {
   arg_COMPANY=${1:-}
   arg_ENV=${2:-}
   arg_ROLE=${3:-"eks-console-staging"}
+  arg_CONFIG_PATH=${4:-${CONFIG_TENANT_SETTINGS_PATH:-}}
 
   [[ "${arg_COMPANY:-}" != "" ]] || (echo 'Args: -c or --company [required]' && exit 1)
   [[ "${arg_ENV:-}" != "" ]] || (echo 'Args: -e or --env [required]' && exit 1)
@@ -68,11 +77,11 @@ getargs_osx() {
 main() {
   if [ "$(uname)" == "Darwin" ]; then
     getargs_osx "$@"
-    aziona-environment $arg_COMPANY $arg_ENV
+    aziona-environment $arg_COMPANY $arg_ENV $arg_CONFIG_PATH
     aziona-aws-assume-role $arg_COMPANY $arg_ENV $arg_ROLE
   elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
     getargs "$@"
-    aziona-environment --company $arg_COMPANY --env $arg_ENV
+    aziona-environment --company $arg_COMPANY --env $arg_ENV --config-path $arg_CONFIG_PATH
     aziona-aws-assume-role --company $arg_COMPANY --env $arg_ENV --role $arg_ROLE
   else
       echo "OS not valid"
