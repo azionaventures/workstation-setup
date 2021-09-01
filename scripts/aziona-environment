@@ -60,6 +60,7 @@ getargs() {
 getargs_osx() {
   arg_COMPANY=${1:-}
   arg_ENV=${2:-}
+  arg_CONFIG_PATH=${3:-}
 
   [[ "${arg_COMPANY:-}" != "" ]] || (echo 'Args: -c or --company [required]' && exit 1)
   [[ "${arg_ENV:-}" != "" ]] || (echo 'Args: -e or --env [required]' && exit 1)
