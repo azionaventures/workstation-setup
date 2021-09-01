@@ -60,7 +60,7 @@ getargs() {
   fi
 
   # Default config path
-  if [ -z "${arg_PROFILE:-}" ] ; then
+  if [ -z "${arg_CONFIG_PATH:-}" ] ; then
     arg_CONFIG_PATH=${CONFIG_TENANT_SETTINGS_PATH:-}
   fi
 }

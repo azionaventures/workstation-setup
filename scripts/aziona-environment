@@ -55,12 +55,17 @@ getargs() {
 
   [[ "${arg_COMPANY:-}" != "" ]] || (echo 'Args: -c or --company [required]' && exit 1)
   [[ "${arg_ENV:-}" != "" ]] || (echo 'Args: -e or --env [required]' && exit 1)
+  
+  # Default config path
+  if [ -z "${arg_CONFIG_PATH:-}" ] ; then
+    arg_CONFIG_PATH=${CONFIG_TENANT_SETTINGS_PATH:-}
+  fi
 }
 
 getargs_osx() {
   arg_COMPANY=${1:-}
   arg_ENV=${2:-}
-  arg_CONFIG_PATH=${3:-}
+  arg_CONFIG_PATH=${3:-${CONFIG_TENANT_SETTINGS_PATH:-}}
 
   [[ "${arg_COMPANY:-}" != "" ]] || (echo 'Args: -c or --company [required]' && exit 1)
   [[ "${arg_ENV:-}" != "" ]] || (echo 'Args: -e or --env [required]' && exit 1)

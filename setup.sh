@@ -43,6 +43,17 @@ depends() {
     return
   fi
   
+  if [ "$(which jq)" == "" ] ; then
+    echo "[INFO] Install jq"
+    if [ "$(uname)" == "Darwin" ]; then
+      brew install jq
+    elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+      sudo apt-get install jq
+    fi
+  else
+    echo "[INFO] jq already installed"
+  fi
+
   if [ "$(which kubectl)" == "" ] ; then
     echo "[INFO] Install K8S"
     if [ "$(uname)" == "Darwin" ]; then
