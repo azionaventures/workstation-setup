@@ -1,39 +1,37 @@
-#!/bin/bash
+#!/usr/bin/env python3
 
-TEMPLATE=$1
-shift 1
+import sys
+import argparse
+import os
+import subprocess
 
-if [ "$(uname)" == "Darwin" ]; then
-    WORKSPACE_PREFIX=${PROJECTS_PREFIX:-"/Users/$(whoami)/Documents/projects"}/$COMPANY
-    if [ ! "$(which aziona)" ]; then
-        DEVOPS_PATH=${AZIONA_PREFIX:-"${PROJECTS_PREFIX:-"/Users/$(whoami)/Documents/projects"}/azionaventures"}/aziona-cli
-        export TERRAFORM_PATH=$DEVOPS_PATH/terraform
-        source ${DEVOPS_PATH}/venv/bin/activate
-    fi
-elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-    WORKSPACE_PREFIX=${PROJECTS_PREFIX:-"/opt/project"}/$COMPANY
-    if [ ! "$(which aziona)" ]; then
-        DEVOPS_PATH=${AZIONA_PREFIX:-"${PROJECTS_PREFIX:-"/opt/project"}/azionaventures"}/aziona-cli
-        export TERRAFORM_PATH=$DEVOPS_PATH/terraform
-        source ${DEVOPS_PATH}/venv/bin/activate
-    fi
-elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
-    echo "Pls install Linux lol"
-elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW64_NT" ]; then
-     echo "Pls install Linux lol"
-else
-    echo "Unknown os"
-    exit 1
-fi
 
-TENANT=$ENVIRONMENT
-if [ -z "${CONFIG_TENANT_SETTINGS_PATH:-}" ]; then 
-    export $(grep -v '^#' $WORKSPACE_PREFIX/config/$COMPANY-tenant-settings/$TENANT/.env | xargs)
-else
-    export $(grep -v '^#' $CONFIG_TENANT_SETTINGS_PATH/$TENANT/.env | xargs)
-fi
-CONF_FILE=$WORKSPACE_PREFIX/config/$COMPANY-tenant-settings/$TENANT/settings.tfvars
-SECRETS_FILE=$WORKSPACE_PREFIX/secrets/$COMPANY-secrets-$TENANT/$COMPANY-terraform-secrets.tfvars
+def argsinstance():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-t",
+        "--template",
+        required=True,
+        type=str,
+        help="Template yaml path",
+    )
+    parser.add_argument(
+        'targets', 
+        metavar='targets', 
+        type=str, 
+        nargs='+',
+        help="Target name")
+    return parser
 
-echo "aziona -f ${INFRASTRUCTURE_PATH:-"$AZIONA_PREFIX/infrastructure"}/template/$TEMPLATE.yml $@"
-aziona -f ${INFRASTRUCTURE_PATH:-"$AZIONA_PREFIX/infrastructure"}/template/$TEMPLATE.yml $@
+
+def main():
+    args = argsinstance().parse_args()
+
+    template = os.getenv("AZIONA_WORKSPACE_INFRASTRUCTURE") + "/template/" + args.template + ".yml"
+
+    command = "aziona -v -f %s %s" % (template," ".join(args.targets))
+
+    subprocess.check_call(command, shell=True)
+
+if __name__ == "__main__":
+    sys.exit(main())

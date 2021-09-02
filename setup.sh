@@ -19,10 +19,13 @@ AZIONA_TERRAFORM_MODULES_PATH=${AZIONA_PATH}/terraform-modules
 AZIONA_TENANT_PATH=${AZIONA_PATH}/tenant
 
 if [ "$(uname)" == "Darwin" ]; then
-  AZIONA_WORKSPACE_PATH=/Users/$(whoami)/Documents/projects
+  AZIONA_WORKSPACE_PATH=/Users/$(whoami)/Documents/projects/azionaventures
 elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-  AZIONA_WORKSPACE_PATH=/opt/project
+  AZIONA_WORKSPACE_PATH=/opt/project/azionaventures
 fi
+
+AZIONA_WORKSPACE_INFRASTRUCTURE=${AZIONA_WORKSPACE_PATH}/infrastructure
+AZIONA_WORKSPACE_AZIONACLI=${AZIONA_WORKSPACE_PATH}/aziona-cli
 
 ONLY_SCRIPTS=false
 ONLY_DEPENDS=false
@@ -122,12 +125,14 @@ configuration() {
   if [ ! -f ${AZIONA_ENV_PATH} ] ; then
     touch "${AZIONA_ENV_PATH}"
   fi
-  _add_to_file "AZIONA_PATH=${AZIONA_PATH}" "${AZIONA_ENV_PATH}"
-  _add_to_file "AZIONA_ENV_PATH=${AZIONA_ENV_PATH}" "${AZIONA_ENV_PATH}"
-  _add_to_file "AZIONA_TENANT_PATH=${AZIONA_TENANT_PATH}" "${AZIONA_ENV_PATH}"
-  _add_to_file "AZIONA_WORKSPACE_PATH=${AZIONA_WORKSPACE_PATH}" "${AZIONA_ENV_PATH}"
-  _add_to_file "AZIONA_BIN_PATH=${AZIONA_BIN_PATH}" "${AZIONA_ENV_PATH}"
-  _add_to_file "AZIONA_TERRAFORM_MODULES_PATH=${AZIONA_TERRAFORM_MODULES_PATH}"  "${AZIONA_ENV_PATH}"
+  _add_to_file "export AZIONA_PATH=${AZIONA_PATH}" "${AZIONA_ENV_PATH}"
+  _add_to_file "export AZIONA_ENV_PATH=${AZIONA_ENV_PATH}" "${AZIONA_ENV_PATH}"
+  _add_to_file "export AZIONA_TENANT_PATH=${AZIONA_TENANT_PATH}" "${AZIONA_ENV_PATH}"
+  _add_to_file "export AZIONA_WORKSPACE_PATH=${AZIONA_WORKSPACE_PATH}" "${AZIONA_ENV_PATH}"
+  _add_to_file "export AZIONA_WORKSPACE_INFRASTRUCTURE=${AZIONA_WORKSPACE_INFRASTRUCTURE}" "${AZIONA_ENV_PATH}"
+  _add_to_file "export AZIONA_WORKSPACE_AZIONACLI=${AZIONA_WORKSPACE_AZIONACLI}" "${AZIONA_ENV_PATH}"
+  _add_to_file "export AZIONA_BIN_PATH=${AZIONA_BIN_PATH}" "${AZIONA_ENV_PATH}"
+  _add_to_file "export AZIONA_TERRAFORM_MODULES_PATH=${AZIONA_TERRAFORM_MODULES_PATH}"  "${AZIONA_ENV_PATH}"
 
   # CONFIGURE .bashrc
   if [ -f ~/.bashrc ] ; then
