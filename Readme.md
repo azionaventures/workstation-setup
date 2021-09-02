@@ -1,27 +1,30 @@
-# Workstation Setup
+# Workstation 
 
-Install all depends and configuration for project maintenance
+**Installazione**
 
-    sudo mkdir -p /opt/project/azionaventures 
-    sudo setfacl -d -R -m u:$(whoami):rwx /opt/project
-    sudo setfacl -R -m u:$(whoami):rwx /opt/project
-
-    cd /opt/project/azionaventures 
     git clone https://github.com/azionaventures/workstation-setup.git
+
     cd workstation-setup
     
     make setup
 
-### Customization
 
-setup your osx
+Esegue solo l'installazione/aggiornamento degli scripts
 
-    export CONFIG_TENANT_SETTINGS_PATH=/PATH/TO/$ORGANIZATION_NAME-tenant-settings
-    make setup
-    source <(setkubeconfig $ORGANIZATION_NAME {cluster_environment})
-    kubectl get pods
+    make update-scripts 
 
-### Utils
+Esegue solo l'installazione delle dipendenze richieste
 
-    make update-scripts -> Esegue solo l'installazione/aggiornamento degli scripts
-    make update-depends -> Esegue solo l'installazione delle dipendenze richieste
+    make update-depends
+
+### Usage
+
+Avviare una sessione aziona è necessario eseguire il comando che segue nel terminale:
+
+    aziona-start --company NOME --env ENV
+
+*Il comando avvia la sessione esclusivamente nel terminale in cui è stato lanciato.
+
+Entrare in un container:
+
+    aziona-exec --pod-name NOME_P --container-name NOME_C
