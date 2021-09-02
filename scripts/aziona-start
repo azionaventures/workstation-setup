@@ -113,7 +113,7 @@ def main():
         args.config_path = os.getenv("CONFIG_TENANT_SETTINGS_PATH", default_config_path(args.company))
 
     if args.aziona_path is None:
-        args.aziona_path = os.getenv("AZIONAVENTURES_PATH", default_aziona_path())
+        args.aziona_path = os.getenv("AZIONA_PATH", default_aziona_path())
 
     if args.aws_role is None:
         args.aws_role = os.getenv("AWS_ROLE", default_aws_role())
@@ -138,7 +138,7 @@ def main():
         args.aws_profile = os.getenv("ORGANIZATION_NAME", "")
         
     add_to_export("CONFIG_TENANT_SETTINGS_PATH",args.config_path)
-    add_to_export("AZIONAVENTURES_PATH",args.aziona_path)
+    add_to_export("AZIONA_PATH",args.aziona_path)
     add_to_export("AWS_ROLE",args.aws_role)
     add_to_export("AWS_PROFILE", args.aws_profile)
     add_to_export("KUBECONFIG","/home/%s/.kube/eksctl/clusters/%s" % (getpass.getuser(),os.getenv("EKS_CLUSTER_NAME", "")))

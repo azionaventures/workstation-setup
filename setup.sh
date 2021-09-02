@@ -2,8 +2,6 @@
 
 set -eE -o functrace
 
-
-
 failure() {
   local lineno=$1
   local msg=$2
@@ -14,30 +12,31 @@ trap 'failure ${LINENO} "$BASH_COMMAND"' ERR
 set -o pipefail
 set -o nounset
 
-NAME=workstation-setup
+AZIONA_PATH=${HOME}/.aziona
+AZIONA_ENV_PATH=${AZIONA_PATH}/.env
+AZIONA_BIN_PATH=${AZIONA_PATH}/bin
+AZIONA_TERRAFORM_MODULES_PATH=${AZIONA_PATH}/terraform-modules
+AZIONA_TENANT_PATH=${AZIONA_PATH}/tenant
 
 if [ "$(uname)" == "Darwin" ]; then
-  PATH_WORK=/Users/$(whoami)/Documents/projects
+  AZIONA_WORKSPACE_PATH=/Users/$(whoami)/Documents/projects
 elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-  PATH_WORK=/opt/project
+  AZIONA_WORKSPACE_PATH=/opt/project
 fi
-PATH_CONF=$HOME/var/$NAME
-PATH_BIN=$HOME/bin
-PATH_AZIONA=$HOME/.aziona
-PATH_AZIONA_TERRAFORM_MODULE=${PATH_AZIONA}/terraform-modules
+
 ONLY_SCRIPTS=false
 ONLY_DEPENDS=false
 
 showHelp() {
-   echo "Configurazione ed installazione delle dipendenze per lo sviluppo Devops"
-   echo
-   echo "Syntax: setup.sh [ -u;--update-scripts | -h;--help ]"
-   echo "options:"
-   echo "-s | --only-scripts  : Installazione/Aggiornamento degli script aziona"
-   echo "-d | --only-depends  : Installazione dipendenze (k8s, awscli, iam-authenticator, docker, terraform) "
-   echo "-h | --help          : Print help"
-   echo
-   exit 0
+  echo "Configurazione ed installazione delle dipendenze per lo sviluppo Devops"
+  echo
+  echo "Syntax: setup.sh [ -u;--update-scripts | -h;--help ]"
+  echo "options:"
+  echo "-s | --only-scripts  : Installazione/Aggiornamento degli script aziona"
+  echo "-d | --only-depends  : Installazione dipendenze (k8s, awscli, iam-authenticator, docker, terraform) "
+  echo "-h | --help          : Print help"
+  echo
+  exit 0
 }
 
 depends() {
@@ -45,10 +44,65 @@ depends() {
     return
   fi
 
+
+
+  if [ "$(which aws)" == "" ] ; then
+    if [ "$(uname)" == "Darwin" ]; then
+      brew install awscli 
+    elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+      if [ ! -d $HOME/.aws ] ; then
+        mkdir -v $HOME/.aws
+        touch $HOME/.aws/config
+        touch $HOME/.aws/credentials
+      fi
+      curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+      unzip awscliv2.zip
+      sudo ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update
+      aws --version
+      rm -Rf ./aws
+      rm awscliv2.zip
+    fi
+  else
+    echo "AWS CLI installed.\nSuggestion version 2"
+  fi
+
+  if [ "$(which aws-iam-authenticator)" == "" ] ; then
+    if [ "$(uname)" == "Darwin" ]; then
+      brew install aws-iam-authenticator
+    elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then  
+      curl -O https://amazon-eks.s3.us-west-2.amazonaws.com/1.19.6/2021-01-05/bin/linux/amd64/aws-iam-authenticator
+      chmod +x ./aws-iam-authenticator
+      mv ./aws-iam.authenticator /usr/local/bin
+    fi
+  else
+    echo "aws-iam-authenticator installed."
+  fi
+
   # Install depends from aziona-cli
   (cd /tmp && curl -O https://raw.githubusercontent.com/azionaventures/aziona-cli/main/bin/aziona-dependencies)
   chmod +x /tmp/aziona-dependencies 
-  /tmp/aziona-dependencies
+  sudo /tmp/aziona-dependencies
+}
+
+_mkdir() {
+  local _path=${1:-}
+  if [ ! -d "${_path}" ] ; then
+    echo "[INFO] Create path: ${_path}" 
+    mkdir -pv "${_path}"
+  fi
+}
+
+_add_to_file() {
+  local _str=${1}
+  local _filepath=${2}
+
+  if [ ! -f "${_filepath}" ] ; then
+    return
+  fi
+
+  if [ "$(grep -w "${_str}" ${_filepath})" == "" ] ; then
+    echo "${_str}" >> ${_filepath}
+  fi
 }
 
 configuration() {
@@ -58,35 +112,44 @@ configuration() {
   
   echo "[INFO] Exec install with user $(whoami)" 
 
-  if [ ! -d $PATH_WORK ] ; then
-    echo "[INFO] Create path work" 
-    mkdir -pv $PATH_WORK
-  fi 
+  _mkdir "${AZIONA_PATH}"
+  _mkdir "${AZIONA_TENANT_PATH}"
+  _mkdir "${AZIONA_WORKSPACE_PATH}"
+  _mkdir "${AZIONA_BIN_PATH}"
+  _mkdir "${AZIONA_TERRAFORM_MODULES_PATH}"
 
-  # ADD CONFIG SCRIPTS  
-  echo "[INFO] Copy config scripts"
-  if [ ! -d "$PATH_CONF" ] ; then
-    mkdir -pv "$PATH_CONF"
-  fi 
-  cp -Rv conf.d "$PATH_CONF"
-  cp -v default.cfg "$PATH_CONF"
-  cp -v base.sh "$PATH_CONF"
-  chmod -R 754 "$PATH_CONF"
+  # CREATE ENV FILE
+  if [ ! -f ${AZIONA_ENV_PATH} ] ; then
+    touch "${AZIONA_ENV_PATH}"
+  fi
+  _add_to_file "AZIONA_PATH=${AZIONA_PATH}" "${AZIONA_ENV_PATH}"
+  _add_to_file "AZIONA_ENV_PATH=${AZIONA_ENV_PATH}" "${AZIONA_ENV_PATH}"
+  _add_to_file "AZIONA_TENANT_PATH=${AZIONA_TENANT_PATH}" "${AZIONA_ENV_PATH}"
+  _add_to_file "AZIONA_WORKSPACE_PATH=${AZIONA_WORKSPACE_PATH}" "${AZIONA_ENV_PATH}"
+  _add_to_file "AZIONA_BIN_PATH=${AZIONA_BIN_PATH}" "${AZIONA_ENV_PATH}"
+  _add_to_file "AZIONA_TERRAFORM_MODULES_PATH=${AZIONA_TERRAFORM_MODULES_PATH}"  "${AZIONA_ENV_PATH}"
 
-  # ADD SCRIPTS  
-  echo "[INFO] Copy scripts"
-  if [ ! -d "$PATH_BIN" ] ; then
-    mkdir -pv "$PATH_BIN"
-  fi 
-  cp -Rv scripts/* "$PATH_BIN"
-  chmod -R 754 "$PATH_BIN"
-
-  if [ ! -d "${PATH_AZIONA}" ] ; then
-    mkdir -pv "${PATH_AZIONA}"
+  # CONFIGURE .bashrc
+  if [ -f ~/.bashrc ] ; then
+    _add_to_file "# AZIONA CONFIG" ~/.bashrc
+    _add_to_file "source \${HOME}/.aziona/.env" ~/.bashrc
+    _add_to_file "export PATH=\$PATH:\$AZIONA_BIN_PATH"  ~/.bashrc
   fi
 
-  if [ ! -d "${PATH_AZIONA_TERRAFORM_MODULE}" ] ; then
-    git clone https://github.com/azionaventures/aziona-terraform-modules.git "${PATH_AZIONA_TERRAFORM_MODULE}"
+  # CONFIGURE .zshrc
+  if [ -f ~/.zshrc ] ; then
+    _add_to_file "# AZIONA CONFIG" ~/.zshrc
+    _add_to_file "source \${HOME}/.aziona/.env" ~/.zshrc
+    _add_to_file "export PATH=\$PATH:\$AZIONA_BIN_PATH"  ~/.zshrc
+  fi
+
+  # ADD SCRIPTS
+  cp -Rv scripts/* "$AZIONA_BIN_PATH"
+  chmod -R 750 "$AZIONA_BIN_PATH"
+
+  # ADD TERRAFORM MODULES AZIONA
+  if [ ! -d "${AZIONA_TERRAFORM_MODULES_PATH}/aziona-terraform-modules" ] ; then
+    git clone https://github.com/azionaventures/aziona-terraform-modules.git "${AZIONA_TERRAFORM_MODULES_PATH}/aziona-terraform-modules"
   fi
 }
 

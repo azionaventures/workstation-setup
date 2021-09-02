@@ -8,8 +8,17 @@
 #   - Nome container (opzionale, default: nome pod)
 #   - comando da eseguire (opzionale, default: bash)
 ##
+set -eE -o functrace
 
-source $HOME/var/workstation-setup/base.sh
+failure() {
+  local lineno=$1
+  local msg=$2
+  echo "Failed at $lineno: $msg"
+}
+trap 'failure ${LINENO} "$BASH_COMMAND"' ERR
+
+set -o pipefail
+set -o nounset
 
 showHelp() {
    echo "Esecuzione container all'interno del pod"
