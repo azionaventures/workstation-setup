@@ -9,8 +9,6 @@ import getpass
 import datetime
 from shutil import which
 
-from requests.models import CONTENT_CHUNK_SIZE
-
 ENV = {}
 
 ENV["AZIONA_PATH"] = os.getenv("HOME") + "/.aziona"
@@ -104,7 +102,7 @@ def dependencies():
     import platform
 
     subprocess.check_call("pip install --user distro", shell=True)
-    subprocess.check_call("pip install --user requests", shell=True)
+    #subprocess.check_call("pip install --user requests", shell=True)
 
     if platform.system() == "Darwin":
         subprocess.check_call("brew install aws-cli", shell=True)
