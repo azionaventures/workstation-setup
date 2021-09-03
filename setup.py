@@ -76,7 +76,7 @@ def configurations():
 
     with open(ENV["AZIONA_ENV_PATH"], "w") as f:
         for key, value in ENV.items():
-            f.write(key + "=" + value + "\n")
+            f.write("export " + key + "=" + value + "\n")
 
     with open(ENV["AZIONA_ACTIVE_PATH"], "w") as f:
         f.write("")
