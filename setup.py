@@ -110,7 +110,7 @@ def dependencies():
         subprocess.check_call("brew install aws-iam-authenticator", shell=True)
 
     if platform.system() == "Linux":
-        if which("aws") is None:
+        if which("aws") is False:
             subprocess.check_call("""
                 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
                 unzip awscliv2.zip && \
