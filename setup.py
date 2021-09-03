@@ -97,12 +97,13 @@ def configurations():
             f.write("\n" + RC)
 
 def dependencies():
-    import requests
     import tempfile
     import platform
 
     subprocess.check_call("pip install --user distro", shell=True)
     subprocess.check_call("pip install --user requests", shell=True)
+
+    import requests
 
     if platform.system() == "Darwin":
         subprocess.check_call("brew install aws-cli", shell=True)
