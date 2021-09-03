@@ -100,8 +100,8 @@ def dependencies():
     import tempfile
     import platform
 
-    subprocess.check_call("pip install --user distro", shell=True)
-    subprocess.check_call("pip install --user requests", shell=True)
+    subprocess.check_call("pip3 install --user distro", shell=True)
+    subprocess.check_call("pip3 install --user requests", shell=True)
 
     import requests
 
