@@ -102,7 +102,7 @@ def dependencies():
     import platform
 
     subprocess.check_call("pip install --user distro", shell=True)
-    #subprocess.check_call("pip install --user requests", shell=True)
+    subprocess.check_call("pip install --user requests", shell=True)
 
     if platform.system() == "Darwin":
         subprocess.check_call("brew install aws-cli", shell=True)
