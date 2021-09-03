@@ -34,6 +34,13 @@ def argsinstance():
         help="Tenant path",
     )
     parser.add_argument(
+        "--active-path",
+        required=False,
+        default=None,
+        type=str,
+        help="Active path",
+    )
+    parser.add_argument(
         "--aws-role",
         required=False,
         default=None,
@@ -128,7 +135,10 @@ def main():
     global EXPORT
     EXPORT += "source " + os.getenv("AZIONA_WORKSPACE_AZIONACLI")  + "/venv/bin/activate > /dev/null 2>&1"
 
-    print(EXPORT)
+    active_path = args.active_path or os.getenv("AZIONA_ACTIVE_PATH", None)
+
+    with open(active_path, "w") as f:
+        f.write(EXPORT)
 
 
 if __name__ == "__main__":

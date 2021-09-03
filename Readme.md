@@ -1,6 +1,6 @@
 # Workstation 
 
-**Install**
+### Install
 
     git clone https://github.com/azionaventures/workstation-setup.git
 
@@ -19,20 +19,24 @@ Esegue solo l'installazione delle dipendenze richieste
 
 ### Usage
 
-Avviare una sessione aziona è necessario eseguire il comando che segue nel terminale:
+**Avviare una sessione aziona è necessario eseguire il comando che segue nel terminale:**
 
-    source <( aziona-start --company NOME --env ENV )
+    # Start env
+    aziona-active --company NOME --env ENV
 
-*Il comando avvia la sessione esclusivamente nel terminale in cui è stato lanciato.
+    # Stop env
+    aziona-deactive
 
-Entrare in un container:
+*Dopo l'esecuzione di acitve o deactive è necessario ricaricare il terminale*
+
+**Entrare in un container**:
 
     aziona-exec --pod-name NOME_P --container-name NOME_C
 
-Eseguire l'accesso:
+**Eseguire l'accesso**:
 
     aziona-ecr-login
 
-Eseguire infrastruttura:
+**Eseguire infrastruttura**:
 
     aziona-infra -t TEMPLATE_NAME target1 target2 ...
