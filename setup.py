@@ -32,6 +32,7 @@ RC = """
 # AZIONA CONFIG (configured in %s)
 source ~/.aziona/.env
 source ~/.aziona/.active
+export PATH=$PATH:$AZIONA_BIN_PATH
 # AZIONA CONFIG END
 """ % datetime.datetime.now()
 
@@ -78,8 +79,6 @@ def configurations():
     with open(ENV["AZIONA_ENV_PATH"], "w") as f:
         for key, value in ENV.items():
             f.write(key + "=" + value + "\n")
-        f.write("source ~/.aziona/.active\n")
-        f.write("export PATH=$PATH:$AZIONA_BIN_PATH\n")
 
     with open(ENV["AZIONA_ACTIVE_PATH"], "w") as f:
         f.write("")
@@ -105,6 +104,7 @@ def dependencies():
     import platform
 
     subprocess.check_call("pip install --user distro", shell=True)
+    subprocess.check_call("pip install --user requests", shell=True)
 
     if platform.system() == "Darwin":
         subprocess.check_call("brew install aws-cli", shell=True)
@@ -140,10 +140,10 @@ def dependencies():
 def main():
     args = argsinstance().parse_args()
 
-    configurations()
-
     if args.only_deps is False:
         scripts()
+
+    configurations()
 
     if args.only_scripts is False:
         dependencies()

@@ -8,7 +8,7 @@ help: ## helper
 ## - Setup completo:
 ##   make setup		
 setup:
-	chmod +x -R scripts setup.py && ./setup.py
+	chmod -R +x scripts setup.py && ./setup.py
 
 ##
 ## - Installazione delle dipendenze:
