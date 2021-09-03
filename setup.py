@@ -138,13 +138,14 @@ def dependencies():
 def main():
     args = argsinstance().parse_args()
 
+    if args.only_scripts is False:
+        dependencies()
+        
     if args.only_deps is False:
         scripts()
 
     configurations()
 
-    if args.only_scripts is False:
-        dependencies()
     
 
 if __name__ == "__main__":
