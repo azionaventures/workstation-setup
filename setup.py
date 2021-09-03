@@ -106,8 +106,9 @@ def dependencies():
     import requests
 
     if platform.system() == "Darwin":
-        subprocess.check_call("brew install awscli", shell=True)
-        subprocess.check_call("brew install aws-iam-authenticator", shell=True)
+        if which("aws") is False:
+            subprocess.check_call("brew install awscli", shell=True)
+            subprocess.check_call("brew install aws-iam-authenticator", shell=True)
 
     if platform.system() == "Linux":
         if which("aws") is False:
