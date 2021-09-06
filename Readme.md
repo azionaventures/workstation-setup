@@ -25,18 +25,21 @@ Esegue solo l'installazione delle dipendenze richieste
 
 ### Usage
 
-**Avviare una sessione aziona è necessario eseguire il comando che segue nel terminale:**
+**Avviare una sessione aziona è necessario**:
 
     # Start env in terminal
     source aziona-activate --company NOME --env ENV
 
+    - or - 
+
     # Start env persistent
     source aziona-persistent-activate --company NOME --env ENV
+
+**De-attivare l'env persistente**:
 
     # Stop env persistent
     source aziona-persistent-deactivate
 
-*Dopo l'esecuzione di acitve o deactive è necessario ricaricare il terminale*
 
 **Entrare in un container**:
 
