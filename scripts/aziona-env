@@ -78,7 +78,7 @@ def add_to_export(name,value):
     EXPORT += f"export {name}={value}\n"
     os.environ[name] = value
 
-def assume_role(profile, account_id, role):
+def assume_role(role, account_id, profile=None):
     command = "aws %s sts assume-role --role-arn arn:aws:iam::%s:role/%s --role-session-name %s-cli" % (
         ("--profile " + profile if profile else ""),
         account_id,
@@ -153,7 +153,7 @@ def main():
     if args.aws_role is not None:
         add_to_export("AWS_ROLE",args.aws_role)
         add_to_export("AWS_PROFILE", args.aws_profile or "")
-        assume_role(args.aws_profile, os.getenv("ACCOUNT_ID"), args.aws_role)
+        assume_role(args.aws_role, os.getenv("ACCOUNT_ID"), args.aws_profile)
 
     kube_cert(os.getenv("EKS_CLUSTER_NAME"), os.getenv("EKS_AWS_REGION"), os.getenv("KUBECONFIG"))
 
