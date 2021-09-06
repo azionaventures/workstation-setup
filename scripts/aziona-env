@@ -68,6 +68,20 @@ def argsinstance():
         action="store_true",
         help="Deactive persistent env",
     )
+    parser.add_argument(
+        "--aws-serial-number",
+        required="--aws-token-code"  in sys.argv,
+        default=None,
+        type=str,
+        help="Deactive persistent env",
+    )
+    parser.add_argument(
+        "--aws-token-code",
+        required="--aws-serial-number" in sys.argv,
+        default=None,
+        type=str,
+        help="Deactive persistent env",
+    )
     return parser
 
 def default_config_path(company):
@@ -78,13 +92,14 @@ def add_to_export(name,value):
     EXPORT += f"export {name}={value}\n"
     os.environ[name] = value
 
-def assume_role(role, account_id, profile=None):
-    command = "aws %s sts assume-role --role-arn arn:aws:iam::%s:role/%s --role-session-name %s-cli" % (
-        ("--profile " + profile if profile else ""),
-        account_id,
-        role,
-        role)
-        
+def assume_role(role, account_id, profile=None, token_code=None, serial_number=None):
+    profile = "--profile " + profile if profile else ""
+    mfa = ""
+    if token_code and serial_number:
+        mfa = f"--serial-number {serial_number} --token-code {token_code}"
+
+    command = f"aws {profile} sts assume-role {mfa} --role-arn arn:aws:iam::{account_id}:role/{role} --role-session-name {role}-cli"
+
     try:
         response = subprocess.check_output(command, shell=True)
         r = json.loads(response.decode().replace("\n", ""))
@@ -153,7 +168,7 @@ def main():
     if args.aws_role is not None:
         add_to_export("AWS_ROLE",args.aws_role)
         add_to_export("AWS_PROFILE", args.aws_profile or "")
-        assume_role(args.aws_role, os.getenv("ACCOUNT_ID"), args.aws_profile)
+        assume_role(args.aws_role, os.getenv("ACCOUNT_ID"), args.aws_profile, args.aws_token_code, args.aws_serial_number)
 
     kube_cert(os.getenv("EKS_CLUSTER_NAME"), os.getenv("EKS_AWS_REGION"), os.getenv("KUBECONFIG"))
 
