@@ -13,7 +13,8 @@ ENV = {}
 
 ENV["AZIONA_PATH"] = os.getenv("HOME") + "/.aziona"
 ENV["AZIONA_ENV_PATH"] = ENV["AZIONA_PATH"] + "/.env"
-ENV["AZIONA_ACTIVE_PATH"] = ENV["AZIONA_PATH"] + "/.active"
+ENV["AZIONA_ACTIVE_PATH"] = "/tmp/.aziona_active"
+ENV["AZIONA_ACTIVE_PERSISTENT_PATH"] = ENV["AZIONA_PATH"] + "/.aziona_active_perisistent"
 ENV["AZIONA_BIN_PATH"] = ENV["AZIONA_PATH"] + "/bin"
 ENV["AZIONA_TERRAFORM_MODULES_PATH"] = ENV["AZIONA_PATH"] + "/terraform-modules"
 ENV["AZIONA_TENANT_PATH"] = ENV["AZIONA_PATH"] + "/tenant"
@@ -29,7 +30,7 @@ ENV["AZIONA_WORKSPACE_AZIONACLI"] = ENV["AZIONA_WORKSPACE_PATH"] + "/aziona-cli"
 RC = """
 # AZIONA CONFIG (configured in %s)
 source ~/.aziona/.env
-source ~/.aziona/.active
+source ${AZIONA_ACTIVE_PERSISTENT_PATH:-}
 export PATH=$PATH:$AZIONA_BIN_PATH
 # AZIONA CONFIG END
 """ % datetime.datetime.now()
@@ -78,7 +79,7 @@ def configurations():
         for key, value in ENV.items():
             f.write("export " + key + "=" + value + "\n")
 
-    with open(ENV["AZIONA_ACTIVE_PATH"], "w") as f:
+    with open(ENV["AZIONA_ACTIVE_PERSISTENT_PATH"], "w") as f:
         f.write("")
 
     confirm = True if input("Add source in .bashrc or .zshrc [y,yes or n,no]: ").lower() in ["y","yes"] else False
@@ -94,7 +95,7 @@ def configurations():
     zshrc_path = os.getenv("HOME") + "/.zshrc"
     if os.path.isfile(zshrc_path) is True:
         with open(zshrc_path, "a") as f:
-            f.write("\n" + RC)
+            f.write(RC)
 
 def dependencies():
     def install_package(name):

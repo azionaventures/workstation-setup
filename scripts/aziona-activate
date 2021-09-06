@@ -7,4 +7,6 @@ if [ "${BASH_SOURCE-}" = "$0" ]; then
     exit 33
 fi
 
-source <( aziona-env "$@" ) 
+aziona-env "$@"
+
+source ${AZIONA_ACTIVE_PATH:-"/tmp/.active.tmp"}

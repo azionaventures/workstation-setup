@@ -123,7 +123,7 @@ def persistent_env_deactive(path):
     with open(path, "w") as f:
         f.write("")
     
-def persistent_env_active(path, env):
+def env_active(path, env):
     global EXPORT
     with open(path, "w") as f:
         EXPORT = f"echo 'Aziona - env active: {env}'\n"  + EXPORT 
@@ -134,7 +134,11 @@ def main():
 
     # Check args input
     args.config_path = args.config_path or default_config_path(args.company)
-    args.active_path = args.active_path or os.getenv("AZIONA_ACTIVE_PATH", None)
+    if args.active_path is None:
+        if args.persistent_active  is True or args.persistent_deactive is True:
+            args.active_path = os.getenv("AZIONA_ACTIVE_PERSISTENT_PATH", None) 
+        else: 
+            args.active_path = os.getenv("AZIONA_ACTIVE_PATH", None)
 
     if args.persistent_deactive is True:
         persistent_env_deactive(args.active_path)
@@ -159,7 +163,6 @@ def main():
                 continue
             name, value = line.split("=")
             add_to_export(name,value)
-    
         
     add_to_export("AZIONA_ENABLED", "true")
     add_to_export("CONFIG_TENANT_SETTINGS_PATH",args.config_path)
@@ -175,11 +178,10 @@ def main():
     global EXPORT
     EXPORT += "source " + os.getenv("AZIONA_WORKSPACE_AZIONACLI")  + "/venv/bin/activate > /dev/null 2>&1"
 
-    if args.persistent_active is True:
-        persistent_env_active(args.active_path, args.env)
-        return 0
+    env_active(args.active_path, args.env)
 
-    print(EXPORT)
+    return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())
