@@ -33,6 +33,10 @@ def argsinstance():
 
 
 def main():
+    if os.getenv("AZIONA_ENABLED", "false") != "true":
+        print("[ERROR] Before activate aziona env")
+        return 1
+        
     args = argsinstance().parse_args()
 
     aws_profile = args.aws_profile or os.getenv("AWS_PROFILE")

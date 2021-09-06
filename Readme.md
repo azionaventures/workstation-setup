@@ -1,5 +1,11 @@
 # Workstation 
 
+### Required
+
+- Python >= 3.6
+- pip3
+- S.O. Linux or OSX
+
 ### Install
 
     git clone https://github.com/azionaventures/workstation-setup.git
@@ -21,11 +27,14 @@ Esegue solo l'installazione delle dipendenze richieste
 
 **Avviare una sessione aziona è necessario eseguire il comando che segue nel terminale:**
 
-    # Start env
-    aziona-active --company NOME --env ENV
+    # Start env in terminal
+    source aziona-activate --company NOME --env ENV
 
-    # Stop env
-    aziona-deactive
+    # Start env persistent
+    source aziona-persistent-activate --company NOME --env ENV
+
+    # Stop env persistent
+    source aziona-persistent-deactivate
 
 *Dopo l'esecuzione di acitve o deactive è necessario ricaricare il terminale*
 

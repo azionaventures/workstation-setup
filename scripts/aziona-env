@@ -54,10 +54,21 @@ def argsinstance():
         type=str,
         help="AWS profile used as credential",
     )
+    parser.add_argument(
+        "--persistent-active",
+        required=False,
+        default=False,
+        action="store_true",
+        help="Active persistent env",
+    )
+    parser.add_argument(
+        "--persistent-deactive",
+        required=False,
+        default=False,
+        action="store_true",
+        help="Deactive persistent env",
+    )
     return parser
-
-def default_aws_role():
-    return "eks-console-staging"
 
 def default_config_path(company):
   return os.getenv("AZIONA_TENANT_PATH") + "/" + company
@@ -68,12 +79,12 @@ def add_to_export(name,value):
     os.environ[name] = value
 
 def assume_role(profile, account_id, role):
-    command = "aws --profile %s sts assume-role --role-arn arn:aws:iam::%s:role/%s --role-session-name %s-cli" % (
-        profile,
+    command = "aws %s sts assume-role --role-arn arn:aws:iam::%s:role/%s --role-session-name %s-cli" % (
+        ("--profile " + profile if profile else ""),
         account_id,
         role,
         role)
-
+        
     try:
         response = subprocess.check_output(command, shell=True)
         r = json.loads(response.decode().replace("\n", ""))
@@ -93,13 +104,29 @@ def kube_cert(cluster, region, kubeconfig_path):
     if p.returncode != 0:
         raise Exception(p.stderr.decode())
 
+def persistent_env_deactive(path):
+    with open(path, "w") as f:
+        f.write("")
+    
+    print("Success! Re-start terminal")
+
+def persistent_env_active(path, env):
+    global EXPORT
+    with open(path, "w") as f:
+        EXPORT = f"echo 'Aziona - env active: {env}'\n"  + EXPORT 
+        f.write(EXPORT)
+    print("Success! Re-start terminal")
+
 def main():
     args = argsinstance().parse_args()
 
     # Check args input
     args.config_path = args.config_path or default_config_path(args.company)
+    args.active_path = args.active_path or os.getenv("AZIONA_ACTIVE_PATH", None)
 
-    args.aws_role = args.aws_role or os.getenv("AWS_ROLE", default_aws_role())
+    if args.persistent_deactive is True:
+        persistent_env_deactive(args.active_path)
+        return 0
 
     if os.path.isdir(args.config_path) is False:
         print("Tenant directory not found: " + args.config_path)
@@ -121,25 +148,26 @@ def main():
             name, value = line.split("=")
             add_to_export(name,value)
     
-    args.aws_profile = args.aws_profile or os.getenv("ORGANIZATION_NAME", "")
         
+    add_to_export("AZIONA_ENABLED", "true")
     add_to_export("CONFIG_TENANT_SETTINGS_PATH",args.config_path)
-    add_to_export("AWS_ROLE",args.aws_role)
-    add_to_export("AWS_PROFILE", args.aws_profile)
     add_to_export("KUBECONFIG","/home/%s/.kube/eksctl/clusters/%s" % (getpass.getuser(),os.getenv("EKS_CLUSTER_NAME", "")))
 
-    assume_role(args.aws_profile, os.getenv("ACCOUNT_ID"), args.aws_role)
+    if args.aws_role is not None:
+        add_to_export("AWS_ROLE",args.aws_role)
+        add_to_export("AWS_PROFILE", args.aws_profile or "")
+        assume_role(args.aws_profile, os.getenv("ACCOUNT_ID"), args.aws_role)
 
     kube_cert(os.getenv("EKS_CLUSTER_NAME"), os.getenv("EKS_AWS_REGION"), os.getenv("KUBECONFIG"))
 
     global EXPORT
     EXPORT += "source " + os.getenv("AZIONA_WORKSPACE_AZIONACLI")  + "/venv/bin/activate > /dev/null 2>&1"
 
-    active_path = args.active_path or os.getenv("AZIONA_ACTIVE_PATH", None)
+    if args.persistent_active is True:
+        persistent_env_active(args.active_path, args.env)
+        return 0
 
-    with open(active_path, "w") as f:
-        f.write(EXPORT)
-
+    print(EXPORT)
 
 if __name__ == "__main__":
     sys.exit(main())

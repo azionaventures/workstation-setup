@@ -97,13 +97,22 @@ def configurations():
             f.write("\n" + RC)
 
 def dependencies():
+    def install_package(name):
+        import pip
+        import imp
+
+        pip.main(["install", name])
+        f, fname, desc = imp.find_module(name)
+        return imp.load_module(name, f, fname, desc)
+
     import tempfile
     import platform
 
-    subprocess.check_call("pip3 install --user distro", shell=True)
-    subprocess.check_call("pip3 install --user requests", shell=True)
+    try:
+        import requests
+    except:
+        requests = install_package("requests")
 
-    import requests
 
     if platform.system() == "Darwin":
         if which("aws") is False:
@@ -140,13 +149,14 @@ def dependencies():
 def main():
     args = argsinstance().parse_args()
 
+    configurations()
+
     if args.only_scripts is False:
         dependencies()
         
     if args.only_deps is False:
         scripts()
 
-    configurations()
 
     
 

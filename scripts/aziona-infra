@@ -25,6 +25,10 @@ def argsinstance():
 
 
 def main():
+    if os.getenv("AZIONA_ENABLED", "false") != "true":
+        print("[ERROR] Before activate aziona env")
+        return 1
+        
     args = argsinstance().parse_args()
 
     template = os.getenv("AZIONA_WORKSPACE_INFRASTRUCTURE") + "/template/" + args.template + ".yml"
