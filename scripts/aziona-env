@@ -89,7 +89,7 @@ def default_config_path(company):
 
 def add_to_export(name,value):
     global EXPORT
-    EXPORT += f"export {name}={value}\n"
+    EXPORT += f"export {name}='{value}'\n"
     os.environ[name] = value
 
 def assume_role(role, account_id, profile=None, token_code=None, serial_number=None):
@@ -167,6 +167,18 @@ def main():
     add_to_export("AZIONA_ENABLED", "true")
     add_to_export("CONFIG_TENANT_SETTINGS_PATH",args.config_path)
     add_to_export("KUBECONFIG","/home/%s/.kube/eksctl/clusters/%s" % (getpass.getuser(),os.getenv("EKS_CLUSTER_NAME", "")))
+    add_to_export("AZIONA_WELCOME_MESSAGE", f"""
+****
+*
+* Welcome into Aziona env
+*
+****
+*
+* Comany: {args.company}
+* Env: {args.env}
+*
+****
+""")
 
     if args.aws_role is not None:
         add_to_export("AWS_ROLE",args.aws_role)

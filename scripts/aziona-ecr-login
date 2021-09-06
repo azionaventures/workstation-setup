@@ -36,6 +36,8 @@ def main():
     if os.getenv("AZIONA_ENABLED", "false") != "true":
         print("[ERROR] Before activate aziona env")
         return 1
+    else:
+        print(os.getenv("AZIONA_WELCOME_MESSAGE", ""))
         
     args = argsinstance().parse_args()
 
