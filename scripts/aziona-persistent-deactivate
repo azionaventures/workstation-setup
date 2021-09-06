@@ -7,7 +7,7 @@ if [ "${BASH_SOURCE-}" = "$0" ]; then
     exit 33
 fi
 
-aziona-env -c "void" -e "void" --persistent-deactive 1> /dev/null
+aziona-env -c "void" -e "void" --persistent-deactive
 
 if [ -n "$ZSH_VERSION" ]; then
     source ~/.zshrc

@@ -108,14 +108,11 @@ def persistent_env_deactive(path):
     with open(path, "w") as f:
         f.write("")
     
-    print("Success! Re-start terminal")
-
 def persistent_env_active(path, env):
     global EXPORT
     with open(path, "w") as f:
         EXPORT = f"echo 'Aziona - env active: {env}'\n"  + EXPORT 
         f.write(EXPORT)
-    print("Success! Re-start terminal")
 
 def main():
     args = argsinstance().parse_args()
