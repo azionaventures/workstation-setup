@@ -166,7 +166,7 @@ def main():
         
     add_to_export("AZIONA_ENABLED", "true")
     add_to_export("CONFIG_TENANT_SETTINGS_PATH",args.config_path)
-    add_to_export("KUBECONFIG","/home/%s/.kube/eksctl/clusters/%s" % (getpass.getuser(),os.getenv("EKS_CLUSTER_NAME", "")))
+    add_to_export("KUBECONFIG","%s/%s/.kube/eksctl/clusters/%s" % (os.getenv("HOME"), getpass.getuser(),os.getenv("EKS_CLUSTER_NAME", "")))
     add_to_export("AZIONA_WELCOME_MESSAGE", f"""
 ****
 *
