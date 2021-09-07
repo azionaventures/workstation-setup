@@ -41,11 +41,11 @@ def main():
         
     args = argsinstance().parse_args()
 
-    aws_profile = args.aws_profile or os.getenv("AWS_PROFILE")
+    aws_profile = "--profile " + args.aws_profile if args.aws_profile else ""
     aws_region = args.aws_region or os.getenv("ECR_AWS_REGION")
     aws_account_id = args.aws_account_id or os.getenv("ECR_ACCOUNT_ID")
 
-    command = f"aws --profile {aws_profile} ecr get-login-password --region {aws_region} | docker login --username AWS --password-stdin {aws_account_id}.dkr.ecr.{aws_region}.amazonaws.com"
+    command = f"aws {aws_profile} ecr get-login-password --region {aws_region} | docker login --username AWS --password-stdin {aws_account_id}.dkr.ecr.{aws_region}.amazonaws.com"
 
     subprocess.check_call(command, shell=True)
 
