@@ -1,0 +1,53 @@
+#!/usr/bin/env python3
+
+import sys
+import argparse
+import os
+import subprocess
+
+
+def argsinstance():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--aws-account-id",
+        required=False,
+        default=None,
+        type=str,
+        help="Account id ecr",
+    )
+    parser.add_argument(
+        "--aws-region",
+        required=False,
+        default=None,
+        type=str,
+        help="AWS region repository",
+    )
+    parser.add_argument(
+        "--aws-profile",
+        required=False,
+        default=None,
+        type=str,
+        help="AWS profile",
+    )
+    return parser
+
+
+def main():
+    if os.getenv("AZIONA_ENABLED", "false") != "true":
+        print("[ERROR] Before activate aziona env")
+        return 1
+    else:
+        print(os.getenv("AZIONA_WELCOME_MESSAGE", ""))
+        
+    args = argsinstance().parse_args()
+
+    aws_profile = "--profile " + args.aws_profile if args.aws_profile else ""
+    aws_region = args.aws_region or os.getenv("ECR_AWS_REGION")
+    aws_account_id = args.aws_account_id or os.getenv("ECR_ACCOUNT_ID")
+
+    command = f"aws {aws_profile} ecr get-login-password --region {aws_region} | docker login --username AWS --password-stdin {aws_account_id}.dkr.ecr.{aws_region}.amazonaws.com"
+
+    subprocess.check_call(command, shell=True)
+
+if __name__ == "__main__":
+    sys.exit(main())

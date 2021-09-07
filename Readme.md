@@ -1,27 +1,54 @@
-# Workstation Setup
+# Workstation 
 
-Install all depends and configuration for project maintenance
+### Required
 
-    sudo mkdir -p /opt/project/azionaventures 
-    sudo setfacl -d -R -m u:$(whoami):rwx /opt/project
-    sudo setfacl -R -m u:$(whoami):rwx /opt/project
+- Python >= 3.6
+- pip3
+- S.O. Linux or OSX
 
-    cd /opt/project/azionaventures 
+### Install
+
     git clone https://github.com/azionaventures/workstation-setup.git
+
     cd workstation-setup
     
     make setup
 
-### Customization
 
-setup your osx
+Esegue solo l'installazione/aggiornamento degli scripts
 
-    export CONFIG_TENANT_SETTINGS_PATH=/PATH/TO/$ORGANIZATION_NAME-tenant-settings
-    make setup
-    source <(setkubeconfig $ORGANIZATION_NAME {cluster_environment})
-    kubectl get pods
+    make update-scripts 
 
-### Utils
+Esegue solo l'installazione delle dipendenze richieste
 
-    make update-scripts -> Esegue solo l'installazione/aggiornamento degli scripts
-    make update-depends -> Esegue solo l'installazione delle dipendenze richieste
+    make update-depends
+
+### Usage
+
+**Avviare una sessione aziona è necessario**:
+
+    # Start env in terminal
+    source aziona-activate --company NOME --env ENV
+
+    - or - 
+
+    # Start env persistent
+    source aziona-persistent-activate --company NOME --env ENV
+
+**De-attivare l'env persistente**:
+
+    # Stop env persistent
+    source aziona-persistent-deactivate
+
+
+**Entrare in un container**:
+
+    aziona-exec --pod-name NOME_P --container-name NOME_C
+
+**Eseguire l'accesso**:
+
+    aziona-ecr-login
+
+**Eseguire infrastruttura**:
+
+    aziona-infra -t TEMPLATE_NAME target1 target2 ...
