@@ -44,7 +44,7 @@ def argsinstance():
         help="Update only scripts",
     )
     parser.add_argument(
-        "--only-deps",
+        "--only-depends",
         action="store_true",
         default=False,
         help="Update only dependencies",
@@ -155,7 +155,7 @@ def main():
     if args.only_scripts is False:
         dependencies()
         
-    if args.only_deps is False:
+    if args.only_depends is False:
         scripts()
 
 

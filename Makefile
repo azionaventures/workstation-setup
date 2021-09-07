@@ -14,10 +14,10 @@ setup:
 ## - Installazione delle dipendenze:
 ##   make update-depends		
 update-depends:
-	git pull && ./setup.sh --only-depends 
+	git pull && ./setup.py --only-depends 
 
 ##
 ## - Installazione/Aggiornamento scripts aziona:
 ##   make update-scripts		
 update-scripts:
-	git pull && ./setup.sh --only-scripts 
+	git pull && ./setup.py --only-scripts 
