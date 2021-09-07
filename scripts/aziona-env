@@ -110,12 +110,9 @@ def assume_role(role, account_id, profile=None, token_code=None, serial_number=N
     except subprocess.CalledProcessError as e:
         raise e
 
-def kube_cert(cluster, region, kubeconfig_path):
-    p = subprocess.run("eksctl utils write-kubeconfig --cluster %s --region %s --kubeconfig %s" % ( 
-        cluster,
-        region,
-        kubeconfig_path
-    ), stderr=subprocess.PIPE, stdout=subprocess.PIPE, shell=True)
+def kube_cert(cluster, region, kubeconfig_path, profile=None):
+    profile = "--profile " + profile if profile else ""
+    p = subprocess.run(f"eksctl utils write-kubeconfig {profile} --cluster {cluster} --region {region} --kubeconfig {kubeconfig_path}", stderr=subprocess.PIPE, stdout=subprocess.PIPE, shell=True)
     if p.returncode != 0:
         raise Exception(p.stderr.decode())
 
@@ -185,7 +182,7 @@ def main():
         add_to_export("AWS_PROFILE", args.aws_profile or "")
         assume_role(args.aws_role, os.getenv("ACCOUNT_ID"), args.aws_profile, args.aws_token_code, args.aws_serial_number)
 
-    kube_cert(os.getenv("EKS_CLUSTER_NAME"), os.getenv("EKS_AWS_REGION"), os.getenv("KUBECONFIG"))
+    kube_cert(os.getenv("EKS_CLUSTER_NAME"), os.getenv("EKS_AWS_REGION"), os.getenv("KUBECONFIG"), args.aws_profile)
 
     global EXPORT
     EXPORT += "source " + os.getenv("AZIONA_WORKSPACE_AZIONACLI")  + "/venv/bin/activate > /dev/null 2>&1"
