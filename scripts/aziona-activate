@@ -9,4 +9,4 @@ fi
 
 aziona-env "$@"
 
-source ${AZIONA_ACTIVE_PATH:-"/tmp/.active.tmp"}
+source ${AZIONA_ACTIVE_PATH:-"/tmp/.aziona_active"}
