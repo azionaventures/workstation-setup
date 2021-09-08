@@ -98,22 +98,7 @@ def configurations():
             f.write(RC)
 
 def dependencies():
-    def install_package(name):
-        import pip
-        import imp
-
-        pip.main(["install", name])
-        f, fname, desc = imp.find_module(name)
-        return imp.load_module(name, f, fname, desc)
-
-    import tempfile
     import platform
-
-    try:
-        import requests
-    except:
-        requests = install_package("requests")
-
 
     if platform.system() == "Darwin":
         if which("aws") is False:
@@ -135,17 +120,10 @@ def dependencies():
                 chmod +x ./aws-iam-authenticator && \ 
                 mv ./aws-iam-authenticator /usr/local/bin""", shell=True)
 
-    response = requests.get("https://raw.githubusercontent.com/azionaventures/aziona-cli/main/bin/aziona-dependencies")
-
-    file, filename = tempfile.mkstemp()
-    with open(filename, "w") as f:
-        f.write(response.text)
-
-    command = f"python3 {filename}"
-
-    subprocess.check_call(command, shell=True)
-
-    os.close(file)
+    subprocess.check_call("""cd /tmp && \
+        curl -O "https://raw.githubusercontent.com/azionaventures/aziona-cli/main/bin/aziona-dependencies" && \
+        chmod +x aziona-dependencies && \
+        ./aziona-dependencies""", shell=True)
 
 def main():
     args = argsinstance().parse_args()
