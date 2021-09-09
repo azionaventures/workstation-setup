@@ -85,17 +85,24 @@ def configurations():
     confirm = True if input("Add source in .bashrc or .zshrc [y,yes or n,no]: ").lower() in ["y","yes"] else False
 
     if confirm is False:
+        print("Add in shell configurtion file: \n" + RC + "\n")
+        import time
+        time.sleep(1.0)
         return
-    
+
     bashrc_path = os.getenv("HOME") + "/.bashrc"
     if os.path.isfile(bashrc_path) is True:
-        with open(bashrc_path, "a") as f:
-            f.write("\n" + RC)
+        with open(bashrc_path, "r") as f:
+            if "AZIONA CONFIG" not in f.read():
+                with open(bashrc_path, "a") as f:
+                    f.write(RC)
 
     zshrc_path = os.getenv("HOME") + "/.zshrc"
     if os.path.isfile(zshrc_path) is True:
-        with open(zshrc_path, "a") as f:
-            f.write(RC)
+        with open(bashrc_path, "r") as f:
+            if "AZIONA CONFIG" not in f.read():
+                with open(zshrc_path, "a") as f:
+                    f.write(RC)
 
 def dependencies():
     import platform
@@ -104,6 +111,10 @@ def dependencies():
         if which("aws") is False:
             subprocess.check_call("brew install awscli", shell=True)
             subprocess.check_call("brew install aws-iam-authenticator", shell=True)
+        install_dependencies_command = """cd /tmp && \
+            curl -O "https://raw.githubusercontent.com/azionaventures/aziona-cli/main/bin/aziona-dependencies" && \
+            chmod +x aziona-dependencies && \
+            ./aziona-dependencies"""
 
     if platform.system() == "Linux":
         if which("aws") is False:
@@ -120,10 +131,12 @@ def dependencies():
                 chmod +x ./aws-iam-authenticator && \ 
                 mv ./aws-iam-authenticator /usr/local/bin""", shell=True)
 
-    subprocess.check_call("""cd /tmp && \
-        curl -O "https://raw.githubusercontent.com/azionaventures/aziona-cli/main/bin/aziona-dependencies" && \
-        chmod +x aziona-dependencies && \
-        ./aziona-dependencies""", shell=True)
+        install_dependencies_command = """cd /tmp && \
+            curl -O "https://raw.githubusercontent.com/azionaventures/aziona-cli/main/bin/aziona-dependencies" && \
+            chmod +x aziona-dependencies && \
+            sudo ./aziona-dependencies"""
+
+    subprocess.check_call(install_dependencies_command, shell=True)
 
 def main():
     args = argsinstance().parse_args()
@@ -135,9 +148,6 @@ def main():
         
     if args.only_depends is False:
         scripts()
-
-
-    
 
 if __name__ == "__main__":
     sys.exit(main())
