@@ -119,12 +119,6 @@ def kube_cert(cluster, region, kubeconfig_path, profile=None):
 def persistent_env_deactive(path):
     with open(path, "w") as f:
         f.write("")
-    
-def env_active(path, env):
-    global EXPORT
-    with open(path, "w") as f:
-        EXPORT = f"echo 'Aziona - env active: {env}'\n"  + EXPORT 
-        f.write(EXPORT)
 
 def main():
     args = argsinstance().parse_args()
@@ -185,9 +179,11 @@ def main():
     kube_cert(os.getenv("EKS_CLUSTER_NAME"), os.getenv("EKS_AWS_REGION"), os.getenv("KUBECONFIG"), args.aws_profile)
 
     global EXPORT
-    EXPORT += "source " + os.getenv("AZIONA_WORKSPACE_AZIONACLI")  + "/venv/bin/activate > /dev/null 2>&1"
+    EXPORT += "source " + os.getenv("AZIONA_WORKSPACE_AZIONACLI")  + "/venv/bin/activate > /dev/null 2>&1\n"
+    EXPORT += f"echo 'Aziona - env active: {args.env}'\n" 
 
-    env_active(args.active_path, args.env)
+    with open(args.active_path, "w") as f:
+        f.write(EXPORT)
 
     return 0
 
