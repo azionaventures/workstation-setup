@@ -83,10 +83,10 @@ def argsinstance():
         help="Deactive persistent env",
     )
     parser.add_argument(
-        "--eks-cert",
-        default=True,
-        action="store_false",
-        help="Create eks certificate",
+        "--env-only",
+        default=False,
+        action="store_true",
+        help="Return only env vars",
     )
     return parser
 
@@ -182,7 +182,7 @@ def main():
         add_to_export("AWS_PROFILE", args.aws_profile or "")
         assume_role(args.aws_role, os.getenv("ACCOUNT_ID"), args.aws_profile, args.aws_token_code, args.aws_serial_number)
 
-    if args.eks_cert is True:
+    if args.env_only is False:
         kube_cert(os.getenv("EKS_CLUSTER_NAME"), os.getenv("EKS_AWS_REGION"), os.getenv("KUBECONFIG"), args.aws_profile)
 
     global EXPORT
