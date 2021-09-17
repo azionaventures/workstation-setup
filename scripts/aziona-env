@@ -133,7 +133,8 @@ def main():
             args.active_path = os.getenv("AZIONA_ACTIVE_PERSISTENT_PATH", None) 
         else: 
             args.active_path = os.getenv("AZIONA_ACTIVE_PATH", None)
-            os.remove(args.active_path)
+            if os.path.isfile(args.active_path) is True:
+                os.remove(args.active_path)
 
     if args.persistent_deactive is True:
         with open(args.active_path, "w") as f:
