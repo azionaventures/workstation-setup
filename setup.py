@@ -110,7 +110,6 @@ def dependencies():
     if platform.system() == "Darwin":
         if which("aws") is False:
             subprocess.check_call("brew install awscli", shell=True)
-            subprocess.check_call("brew install aws-iam-authenticator", shell=True)
         install_dependencies_command = """cd /tmp && \
             curl -O "https://raw.githubusercontent.com/azionaventures/aziona-cli/main/bin/aziona-dependencies" && \
             chmod +x aziona-dependencies && \
@@ -125,11 +124,6 @@ def dependencies():
                 aws --version && \
                 rm -Rf ./aws && \
                 rm awscliv2.zip""", shell=True)
-        if which("aws-iam-authenticator") is None:
-            subprocess.check_call("""
-                curl -O https://amazon-eks.s3.us-west-2.amazonaws.com/1.19.6/2021-01-05/bin/linux/amd64/aws-iam-authenticator && \
-                chmod +x ./aws-iam-authenticator && \ 
-                mv ./aws-iam-authenticator /usr/local/bin""", shell=True)
 
         install_dependencies_command = """cd /tmp && \
             curl -O "https://raw.githubusercontent.com/azionaventures/aziona-cli/main/bin/aziona-dependencies" && \
