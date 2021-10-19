@@ -28,9 +28,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Setup
         run: |
-          apt-get update
-          apt-get install -y make acl curl
+          sudo apt-get update
+          sudo apt-get install -y make acl curl
       - name: Run 
         run: |
-          chmod -R +x scripts setup.py 
+          sudo chmod -R +x setup.py 
           ./setup.py -y
