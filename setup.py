@@ -49,6 +49,12 @@ def argsinstance():
         default=False,
         help="Update only dependencies",
     )
+    parser.add_argument(
+        "-y", "--yes",
+        action="store_true",
+        default=False,
+        help="Accept request intput",
+    )
     return parser
 
 
@@ -65,7 +71,7 @@ def scripts():
             shutil.copy(source, destination)
             print('copied', file_name)
 
-def configurations():
+def configurations(args):
     try:
         os.makedirs(f"{ENV['AZIONA_WORKSPACE_PATH']}", exist_ok=True)
     except Exception:
@@ -86,7 +92,7 @@ def configurations():
     with open(ENV["AZIONA_ACTIVE_PERSISTENT_PATH"], "w") as f:
         f.write("")
 
-    confirm = True if input("Add source in .bashrc or .zshrc [y,yes or n,no]: ").lower() in ["y","yes"] else False
+    confirm = True if args.yes or input("Add source in .bashrc or .zshrc [y,yes or n,no]: ").lower() in ["y","yes"] else False
 
     if confirm is False:
         print("Add in shell configurtion file: \n" + RC + "\n")
@@ -139,7 +145,7 @@ def dependencies():
 def main():
     args = argsinstance().parse_args()
 
-    configurations()
+    configurations(args)
 
     if args.only_scripts is False:
         dependencies()
