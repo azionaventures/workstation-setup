@@ -82,6 +82,12 @@ def argsinstance():
         type=str,
         help="Deactive persistent env",
     )
+    parser.add_argument(
+        "--env-only",
+        default=False,
+        action="store_true",
+        help="Return only env vars",
+    )
     return parser
 
 def default_config_path(company):
@@ -116,9 +122,6 @@ def kube_cert(cluster, region, kubeconfig_path, profile=None):
     if p.returncode != 0:
         raise Exception(p.stderr.decode())
 
-def persistent_env_deactive(path):
-    with open(path, "w") as f:
-        f.write("")
 
 def main():
     args = argsinstance().parse_args()
@@ -130,9 +133,12 @@ def main():
             args.active_path = os.getenv("AZIONA_ACTIVE_PERSISTENT_PATH", None) 
         else: 
             args.active_path = os.getenv("AZIONA_ACTIVE_PATH", None)
+            if os.path.isfile(args.active_path) is True:
+                os.remove(args.active_path)
 
     if args.persistent_deactive is True:
-        persistent_env_deactive(args.active_path)
+        with open(args.active_path, "w") as f:
+            f.write("")
         return 0
 
     if os.path.isdir(args.config_path) is False:
@@ -176,7 +182,8 @@ def main():
         add_to_export("AWS_PROFILE", args.aws_profile or "")
         assume_role(args.aws_role, os.getenv("ACCOUNT_ID"), args.aws_profile, args.aws_token_code, args.aws_serial_number)
 
-    kube_cert(os.getenv("EKS_CLUSTER_NAME"), os.getenv("EKS_AWS_REGION"), os.getenv("KUBECONFIG"), args.aws_profile)
+    if args.env_only is False:
+        kube_cert(os.getenv("EKS_CLUSTER_NAME"), os.getenv("EKS_AWS_REGION"), os.getenv("KUBECONFIG"), args.aws_profile)
 
     global EXPORT
     EXPORT += "source " + os.getenv("AZIONA_WORKSPACE_AZIONACLI")  + "/venv/bin/activate > /dev/null 2>&1\n"
