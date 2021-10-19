@@ -66,9 +66,13 @@ def scripts():
             print('copied', file_name)
 
 def configurations():
+    try:
+        os.makedirs(f"{ENV['AZIONA_WORKSPACE_PATH']}", exist_ok=True)
+    except Exception:
+        print(f"{ENV['AZIONA_WORKSPACE_PATH']} skip creation.")
+
     os.makedirs(f"{ENV['AZIONA_PATH']}", exist_ok=True)
     os.makedirs(f"{ENV['AZIONA_TENANT_PATH']}", exist_ok=True)
-    os.makedirs(f"{ENV['AZIONA_WORKSPACE_PATH']}", exist_ok=True)
     os.makedirs(f"{ENV['AZIONA_BIN_PATH']}", exist_ok=True)
     os.makedirs(f"{ENV['AZIONA_TERRAFORM_MODULES_PATH']}", exist_ok=True)
 
