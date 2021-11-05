@@ -118,7 +118,7 @@ def dependencies():
     import platform
 
     if platform.system() == "Darwin":
-        if which("aws") is False:
+        if which("aws") is None:
             subprocess.check_call("brew install awscli", shell=True)
         install_dependencies_command = """cd /tmp && \
             curl -O "https://raw.githubusercontent.com/azionaventures/aziona-cli/main/bin/aziona-dependencies" && \
@@ -126,7 +126,7 @@ def dependencies():
             ./aziona-dependencies"""
 
     if platform.system() == "Linux":
-        if which("aws") is False:
+        if which("aws") is None:
             subprocess.check_call("""
                 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
                 unzip awscliv2.zip && \
