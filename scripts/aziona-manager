@@ -77,7 +77,7 @@ def main():
         subprocess.check_call(f"cd {tmp_dir.name} \
             && git clone {WS_GITHUB_REPO_URL} cloned \
             && cd cloned \
-            && git checkout {args.update_bin} \
+            && git checkout {args.bin_update} \
             && make setup", shell=True)
         tmp_dir.cleanup()
 
