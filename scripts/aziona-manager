@@ -82,11 +82,16 @@ def main():
         tmp_dir.cleanup()
 
     if args.tf_module_add:
+        tf_path = os.path.join(os.getenv('AZIONA_TERRAFORM_MODULES_PATH'), args.tf_module_add)
+        if os.path.isdir(tf_path):
+            print(f"TF module {tf_path} already exist. Use --tf-module-update")
         subprocess.check_call(f"cd {os.getenv('AZIONA_TERRAFORM_MODULES_PATH')} \
             && git clone {args.tf_module_add}", shell=True)
         
     if args.tf_module_update:
         tf_path = os.path.join(os.getenv('AZIONA_TERRAFORM_MODULES_PATH'), args.tf_module_update)
+        if not os.path.isdir(tf_path):
+            print(f"TF module {tf_path} not exist. Use --tf-module-add")
         subprocess.check_call(f"cd {tf_path} && git pull && touch {tf_path}", shell=True)
 
 if __name__ == "__main__":
