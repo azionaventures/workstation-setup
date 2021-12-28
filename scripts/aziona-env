@@ -88,6 +88,12 @@ def argsinstance():
         action="store_true",
         help="Return only env vars",
     )
+    parser.add_argument(
+        "--auto-update",
+        default=False,
+        action="store_true",
+        help="",
+    )
     return parser
 
 def default_config_path(company):
@@ -126,6 +132,9 @@ def kube_cert(cluster, region, kubeconfig_path, profile=None):
 def main():
     args = argsinstance().parse_args()
 
+    if args.auto_update:
+        subprocess.check_call("aziona-manager --bin-update main", shell=True)
+        
     # Check args input
     args.config_path = args.config_path or default_config_path(args.company)
     if args.active_path is None:

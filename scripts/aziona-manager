@@ -1,0 +1,100 @@
+#!/usr/bin/env python3
+
+import sys
+import argparse
+import os
+import subprocess
+
+WS_GITHUB_REPO_URL = "https://github.com/azionaventures/workstation-setup.git"
+
+def argsinstance():
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--info",
+        default=False,
+        action="store_true",
+        help="Show WS and Aziona info",
+    )
+    parser.add_argument(
+        "--tf-module-update",
+        default=None,
+        type=str,
+        help="Module name",
+    )
+    parser.add_argument(
+        "--tf-module-add",
+        default=None,
+        type=str,
+        help="Git repository  url",
+    )
+    parser.add_argument(
+        "--bin-update",
+        default=None,
+        type=str,
+        help=f"Branch/Tag version of workstation-setup [{WS_GITHUB_REPO_URL}]",
+    )
+    return parser
+
+
+def main():
+    args = argsinstance().parse_args()
+
+    if args.info:
+        from datetime import datetime
+        print("| WORKSTATION VERSION")
+        print("+---")
+        print("| Version: " + os.getenv("AZIONA_WS_VERSION", "n.d"))
+        print(f"| ")
+
+        print("+---")
+        print("| AZIONA BIN")
+        print("+---")
+        for bin in os.listdir(os.getenv('AZIONA_BIN_PATH')):
+            path = os.path.join(os.getenv('AZIONA_BIN_PATH'), bin)
+            installed_at = datetime.fromtimestamp(os.path.getctime(path)).strftime('%Y-%m-%d %H:%M:%S')
+            print(f"| Name: {bin}")
+            print(f"| Installed at: {installed_at}")
+            print(f"| Dir path: {path}")
+            print(f"| ")
+
+        print("+---")
+        print("| TERRAFORM MODULES")
+        print("+---")
+        for module in os.listdir(os.getenv('AZIONA_TERRAFORM_MODULES_PATH')):
+            path = os.path.join(os.getenv('AZIONA_TERRAFORM_MODULES_PATH'), module)
+            installed_at = datetime.fromtimestamp(os.path.getctime(path)).strftime('%Y-%m-%d %H:%M:%S')
+            print(f"| Name: {module}")
+            print(f"| Installed at: {installed_at}")
+            print(f"| Dir path: {path}")
+            print(f"| ")
+        print("+---")
+
+
+    if args.bin_update:
+        import tempfile
+        tmp_dir = tempfile.TemporaryDirectory()
+        subprocess.check_call(f"cd {tmp_dir.name} \
+            && git clone {WS_GITHUB_REPO_URL} cloned \
+            && cd cloned \
+            && git checkout {args.bin_update} \
+            && make setup", shell=True)
+        tmp_dir.cleanup()
+
+    if args.tf_module_add:
+        tf_path = os.path.join(os.getenv('AZIONA_TERRAFORM_MODULES_PATH'), args.tf_module_add.split("/")[-1].replace(".git", ""))
+        if os.path.isdir(tf_path):
+            print(f"TF module {tf_path} already exist. Use --tf-module-update")
+        else:
+            subprocess.check_call(f"cd {os.getenv('AZIONA_TERRAFORM_MODULES_PATH')} \
+                && git clone {args.tf_module_add}", shell=True)
+        
+    if args.tf_module_update:
+        tf_path = os.path.join(os.getenv('AZIONA_TERRAFORM_MODULES_PATH'), args.tf_module_update)
+        if not os.path.isdir(tf_path):
+            print(f"TF module {tf_path} not exist. Use --tf-module-add")
+        else:
+            subprocess.check_call(f"cd {tf_path} && git pull && touch {tf_path}", shell=True)
+
+if __name__ == "__main__":
+    sys.exit(main())

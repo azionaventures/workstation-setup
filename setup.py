@@ -9,15 +9,17 @@ import getpass
 import datetime
 from shutil import which
 
-ENV = {}
+ENV = {
+    "AZIONA_WS_VERSION": "1.0",
+    "AZIONA_PATH": os.getenv("HOME") + "/.aziona",
+    "AZIONA_ACTIVE_PATH": "/tmp/.aziona_active"
+}
 
-ENV["AZIONA_PATH"] = os.getenv("HOME") + "/.aziona"
-ENV["AZIONA_ENV_PATH"] = ENV["AZIONA_PATH"] + "/.env"
-ENV["AZIONA_ACTIVE_PATH"] = "/tmp/.aziona_active"
-ENV["AZIONA_ACTIVE_PERSISTENT_PATH"] = ENV["AZIONA_PATH"] + "/.aziona_active_perisistent"
-ENV["AZIONA_BIN_PATH"] = ENV["AZIONA_PATH"] + "/bin"
-ENV["AZIONA_TERRAFORM_MODULES_PATH"] = ENV["AZIONA_PATH"] + "/terraform-modules"
-ENV["AZIONA_TENANT_PATH"] = ENV["AZIONA_PATH"] + "/tenant"
+ENV["AZIONA_ENV_PATH"] = os.path.join(ENV["AZIONA_PATH"], ".env")
+ENV["AZIONA_ACTIVE_PERSISTENT_PATH"] = os.path.join(ENV["AZIONA_PATH"], ".aziona_active_perisistent")
+ENV["AZIONA_BIN_PATH"] = os.path.join(ENV["AZIONA_PATH"], "bin")
+ENV["AZIONA_TERRAFORM_MODULES_PATH"] = os.path.join(ENV["AZIONA_PATH"], "terraform-modules")
+ENV["AZIONA_TENANT_PATH"] = os.path.join(ENV["AZIONA_PATH"], "tenant")
 
 if platform.system() == "Darwin":
   ENV["AZIONA_WORKSPACE_PATH"] = "/Users/" + getpass.getuser() + "/Documents/projects/azionaventures"
