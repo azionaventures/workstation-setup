@@ -82,7 +82,7 @@ def main():
         tmp_dir.cleanup()
 
     if args.tf_module_add:
-        tf_path = os.path.join(os.getenv('AZIONA_TERRAFORM_MODULES_PATH'), args.tf_module_add)
+        tf_path = os.path.join(os.getenv('AZIONA_TERRAFORM_MODULES_PATH'), args.tf_module_add.split("/")[-1].replace(".git", ""))
         if os.path.isdir(tf_path):
             print(f"TF module {tf_path} already exist. Use --tf-module-update")
         else:
