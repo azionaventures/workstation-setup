@@ -29,6 +29,18 @@ def argsinstance():
         help="Git repository  url",
     )
     parser.add_argument(
+        "--tenant-settings-update",
+        default=None,
+        type=str,
+        help="Tenant name",
+    )
+    parser.add_argument(
+        "--tenant-settings-add",
+        default=None,
+        type=str,
+        help="Git repository  url",
+    )
+    parser.add_argument(
         "--bin-update",
         default=None,
         type=str,
@@ -70,6 +82,17 @@ def main():
             print(f"| ")
         print("+---")
 
+        print("+---")
+        print("| TENANT SETTINGS")
+        print("+---")
+        for module in os.listdir(os.getenv('AZIONA_TENANT_PATH')):
+            path = os.path.join(os.getenv('AZIONA_TENANT_PATH'), module)
+            installed_at = datetime.fromtimestamp(os.path.getctime(path)).strftime('%Y-%m-%d %H:%M:%S')
+            print(f"| Name: {module}")
+            print(f"| Installed at: {installed_at}")
+            print(f"| Dir path: {path}")
+            print(f"| ")
+        print("+---")
 
     if args.bin_update:
         import tempfile
@@ -95,6 +118,21 @@ def main():
             print(f"TF module {tf_path} not exist. Use --tf-module-add")
         else:
             subprocess.check_call(f"cd {tf_path} && git pull && touch {tf_path}", shell=True)
+
+    if args.tenant_settings_update:
+        tenant_path = os.path.join(os.getenv('AZIONA_TENANT_PATH'), args.tenant_settings_update)
+        if not os.path.isdir(tenant_path):
+            print(f"Tenant {tenant_path} not exist. Use --tenant-settings--add")
+        else:
+            subprocess.check_call(f"cd {tenant_path} && git pull", shell=True)
+
+    if args.tenant_settings_add:
+        tenant_path = os.path.join(os.getenv('AZIONA_TENANT_PATH'), args.tenant_settings_add.split("/")[-1].replace(".git", ""))
+        if os.path.isdir(tenant_path):
+            print(f"TF module {tenant_path} already exist. Use --tenant-settings--update")
+        else:
+            subprocess.check_call(f"cd {os.getenv('AZIONA_TENANT_PATH')} \
+                && git clone {args.tenant_settings_add}", shell=True)
 
 if __name__ == "__main__":
     sys.exit(main())

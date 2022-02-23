@@ -89,7 +89,13 @@ def argsinstance():
         help="Return only env vars",
     )
     parser.add_argument(
-        "--auto-update",
+        "--bin-update",
+        default=False,
+        action="store_true",
+        help="",
+    )
+    parser.add_argument(
+        "--tenant-settings-update",
         default=False,
         action="store_true",
         help="",
@@ -132,8 +138,11 @@ def kube_cert(cluster, region, kubeconfig_path, profile=None):
 def main():
     args = argsinstance().parse_args()
 
-    if args.auto_update:
+    if args.bin_update:
         subprocess.check_call("aziona-manager --bin-update main", shell=True)
+
+    if args.tenant_settings_update:
+        subprocess.check_call(f"aziona-manager --tenant-settings-update {args.company}", shell=True)
         
     # Check args input
     args.config_path = args.config_path or default_config_path(args.company)

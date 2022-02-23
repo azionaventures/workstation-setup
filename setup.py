@@ -9,25 +9,26 @@ import getpass
 import datetime
 from shutil import which
 
-ENV = {
-    "AZIONA_WS_VERSION": "1.0",
-    "AZIONA_PATH": os.getenv("HOME") + "/.aziona",
-    "AZIONA_ACTIVE_PATH": "/tmp/.aziona_active"
-}
-
-ENV["AZIONA_ENV_PATH"] = os.path.join(ENV["AZIONA_PATH"], ".env")
-ENV["AZIONA_ACTIVE_PERSISTENT_PATH"] = os.path.join(ENV["AZIONA_PATH"], ".aziona_active_perisistent")
-ENV["AZIONA_BIN_PATH"] = os.path.join(ENV["AZIONA_PATH"], "bin")
-ENV["AZIONA_TERRAFORM_MODULES_PATH"] = os.path.join(ENV["AZIONA_PATH"], "terraform-modules")
-ENV["AZIONA_TENANT_PATH"] = os.path.join(ENV["AZIONA_PATH"], "tenant")
+AZIONA_PATH = os.path.join(os.getenv("HOME"), ".aziona")
 
 if platform.system() == "Darwin":
-  ENV["AZIONA_WORKSPACE_PATH"] = "/Users/" + getpass.getuser() + "/Documents/projects/azionaventures"
+  AZIONA_WORKSPACE_PATH = "/Users/" + getpass.getuser() + "/Documents/projects/azionaventures"
 if platform.system() == "Linux":
-  ENV["AZIONA_WORKSPACE_PATH"] = "/opt/project/azionaventures"
+  AZIONA_WORKSPACE_PATH = "/opt/project/azionaventures"
 
-ENV["AZIONA_WORKSPACE_INFRASTRUCTURE"] = ENV["AZIONA_WORKSPACE_PATH"] + "/infrastructure"
-ENV["AZIONA_WORKSPACE_AZIONACLI"] = ENV["AZIONA_WORKSPACE_PATH"] + "/aziona-cli"
+ENV = {
+    "AZIONA_WS_VERSION": "1.0",
+    "AZIONA_ACTIVE_PATH": "/tmp/.aziona_active",
+    "AZIONA_PATH": AZIONA_PATH,
+    "AZIONA_ENV_PATH": os.path.join(AZIONA_PATH, ".env"),
+    "AZIONA_ACTIVE_PERSISTENT_PATH": os.path.join(AZIONA_PATH, ".aziona_active_perisistent"),
+    "AZIONA_BIN_PATH": os.path.join(AZIONA_PATH, "bin"),
+    "AZIONA_TERRAFORM_MODULES_PATH": os.path.join(AZIONA_PATH, "terraform-modules"),
+    "AZIONA_TENANT_PATH": os.path.join(AZIONA_PATH, "tenant"),
+    "AZIONA_WORKSPACE_PATH": AZIONA_WORKSPACE_PATH,
+    "AZIONA_WORKSPACE_INFRASTRUCTURE": os.path.join(AZIONA_WORKSPACE_PATH, "/infrastructure"),
+    "AZIONA_WORKSPACE_AZIONACLI": os.path.join(AZIONA_WORKSPACE_PATH, "/aziona-cli")
+}
 
 RC = """
 # AZIONA CONFIG (configured in %s)
@@ -103,15 +104,15 @@ def configurations(args):
         return
 
     bashrc_path = os.getenv("HOME") + "/.bashrc"
-    if os.path.isfile(bashrc_path) is True:
+    if os.path.isfile(bashrc_path):
         with open(bashrc_path, "r") as f:
             if "AZIONA CONFIG" not in f.read():
                 with open(bashrc_path, "a") as f:
                     f.write(RC)
 
     zshrc_path = os.getenv("HOME") + "/.zshrc"
-    if os.path.isfile(zshrc_path) is True:
-        with open(bashrc_path, "r") as f:
+    if os.path.isfile(zshrc_path):
+        with open(zshrc_path, "r") as f:
             if "AZIONA CONFIG" not in f.read():
                 with open(zshrc_path, "a") as f:
                     f.write(RC)
@@ -119,6 +120,9 @@ def configurations(args):
 def dependencies():
     import platform
 
+    if which("aziona") is None:
+        subprocess.check_call("pip install aziona", shell=True)
+    
     if platform.system() == "Darwin":
         if which("aws") is None:
             subprocess.check_call("brew install awscli", shell=True)
@@ -145,15 +149,18 @@ def dependencies():
     subprocess.check_call(install_dependencies_command, shell=True)
 
 def main():
-    args = argsinstance().parse_args()
+    try:
+        args = argsinstance().parse_args()
 
-    configurations(args)
+        configurations(args)
 
-    if args.only_scripts is False:
-        dependencies()
-        
-    if args.only_depends is False:
-        scripts()
+        if args.only_scripts is False:
+            dependencies()
+            
+        if args.only_depends is False:
+            scripts()
+    except KeyboardInterrupt as e:
+        pass
 
 if __name__ == "__main__":
     sys.exit(main())
