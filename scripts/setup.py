@@ -64,7 +64,7 @@ def argsinstance():
 def scripts():
     import shutil
 
-    source_dir = "./scripts/"
+    source_dir = "../bin/"
     dest_dir = ENV["AZIONA_BIN_PATH"] + "/"
     
     for file_name in os.listdir(source_dir):

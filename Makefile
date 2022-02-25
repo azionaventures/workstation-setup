@@ -8,16 +8,16 @@ help: ## helper
 ## - Setup completo:
 ##   make setup		
 setup:
-	chmod -R +x scripts setup.py && ./setup.py
+	chmod -R +x scripts bin && ./scripts/setup.py
 
 ##
 ## - Installazione delle dipendenze:
 ##   make update-depends		
 update-depends:
-	git pull && ./setup.py --only-depends 
+	git pull && ./scripts/setup.py --only-depends 
 
 ##
 ## - Installazione/Aggiornamento scripts aziona:
 ##   make update-scripts		
 update-scripts:
-	git pull && ./setup.py --only-scripts 
+	git pull && ./scripts/setup.py --only-scripts 
