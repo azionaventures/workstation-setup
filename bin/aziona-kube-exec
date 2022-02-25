@@ -52,16 +52,19 @@ def main():
             return 1
 
         pods = []
-        containers= []
+        pod_containers = {}
         index = 0
         for p in ret.items:
             if p.metadata.name.startswith(args.pod):
+                containers = []
                 for c in p.metadata.managed_fields[0].fields_v1.get("f:spec", {}).get("f:containers", {}).keys():
                     containers.append(c.split(":")[2][1:-2])
                 pods.append(p.metadata.name)
+                pod_containers[index] = containers
+
                 print(f"{index})\tPod: {p.metadata.name} \n\tContainer: {containers}\n")
+
                 index += 1
-        
         index = int(input("Enter the index of the Pod: "))
         if index > len(pods):
             print(f"Index {index} not found")
