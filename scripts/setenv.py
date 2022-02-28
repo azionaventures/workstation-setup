@@ -2,12 +2,9 @@
 
 import platform
 import sys
-import argparse
 import os
-import subprocess
 import getpass
 import datetime
-from shutil import which
 
 AZIONA_PATH = os.path.join(os.getenv("HOME"), ".aziona")
 
@@ -38,47 +35,12 @@ export PATH=$PATH:$AZIONA_BIN_PATH
 # AZIONA CONFIG END
 """ % datetime.datetime.now()
 
-def argsinstance():
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--only-scripts",
-        action="store_true",
-        default=False,
-        help="Update only scripts",
-    )
-    parser.add_argument(
-        "--only-depends",
-        action="store_true",
-        default=False,
-        help="Update only dependencies",
-    )
-    parser.add_argument(
-        "-y", "--yes",
-        action="store_true",
-        default=False,
-        help="Accept request intput",
-    )
-    return parser
-
-
-def scripts():
-    import shutil
-
-    source_dir = "../bin/"
-    dest_dir = ENV["AZIONA_BIN_PATH"] + "/"
-    
-    for file_name in os.listdir(source_dir):
-        source = source_dir + file_name
-        destination = dest_dir + file_name
-        if os.path.isfile(source):
-            shutil.copy(source, destination)
-            print('copied', file_name)
-
-def configurations(args):
+def _configurations():
     try:
         os.makedirs(f"{ENV['AZIONA_WORKSPACE_PATH']}", exist_ok=True)
     except Exception:
         print(f"{ENV['AZIONA_WORKSPACE_PATH']} skip creation.")
+        return 1
 
     os.makedirs(f"{ENV['AZIONA_PATH']}", exist_ok=True)
     os.makedirs(f"{ENV['AZIONA_TENANT_PATH']}", exist_ok=True)
@@ -90,18 +52,18 @@ def configurations(args):
 
     with open(ENV["AZIONA_ENV_PATH"], "w") as f:
         for key, value in ENV.items():
-            f.write("export " + key + "=" + value + "\n")
+            f.write(f"export {key}={value}\n")
 
     with open(ENV["AZIONA_ACTIVE_PERSISTENT_PATH"], "w") as f:
         f.write("")
 
-    confirm = True if args.yes or input("Add source in .bashrc or .zshrc [y,yes or n,no]: ").lower() in ["y","yes"] else False
+    confirm = True if input("Add source in .bashrc or/and .zshrc [y,yes or n,no]: ").lower() in ["y","yes"] else False
 
     if confirm is False:
         print("Add in shell configurtion file: \n" + RC + "\n")
         import time
         time.sleep(1.0)
-        return
+        return 0
 
     bashrc_path = os.getenv("HOME") + "/.bashrc"
     if os.path.isfile(bashrc_path):
@@ -117,48 +79,9 @@ def configurations(args):
                 with open(zshrc_path, "a") as f:
                     f.write(RC)
 
-def dependencies():
-    import platform
-
-    if which("aziona") is None:
-        subprocess.check_call("pip install aziona", shell=True)
-    
-    if platform.system() == "Darwin":
-        if which("aws") is None:
-            subprocess.check_call("brew install awscli", shell=True)
-        install_dependencies_command = """cd /tmp && \
-            curl -O "https://raw.githubusercontent.com/azionaventures/aziona-cli/main/bin/aziona-dependencies" && \
-            chmod +x aziona-dependencies && \
-            ./aziona-dependencies"""
-
-    if platform.system() == "Linux":
-        if which("aws") is None:
-            subprocess.check_call("""
-                curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
-                unzip awscliv2.zip && \
-                sudo ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update && \
-                aws --version && \
-                rm -Rf ./aws && \
-                rm awscliv2.zip""", shell=True)
-
-        install_dependencies_command = """cd /tmp && \
-            curl -O "https://raw.githubusercontent.com/azionaventures/aziona-cli/main/bin/aziona-dependencies" && \
-            chmod +x aziona-dependencies && \
-            sudo ./aziona-dependencies"""
-
-    subprocess.check_call(install_dependencies_command, shell=True)
-
 def main():
     try:
-        args = argsinstance().parse_args()
-
-        configurations(args)
-
-        if args.only_scripts is False:
-            dependencies()
-            
-        if args.only_depends is False:
-            scripts()
+        _configurations()
     except KeyboardInterrupt as e:
         pass
 

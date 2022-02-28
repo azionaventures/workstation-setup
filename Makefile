@@ -5,19 +5,11 @@ help: ## helper
 
 .DEFAULT_GOAL := help
 
-## - Setup completo:
-##   make setup		
-setup:
-	chmod -R +x scripts bin && ./scripts/setup.py
+exec-setenv:
+	python scripts/setenv.py
 
-##
-## - Installazione delle dipendenze:
-##   make update-depends		
-update-depends:
-	git pull && ./scripts/setup.py --only-depends 
+exec-bin:
+	python scripts/bin.py
 
-##
-## - Installazione/Aggiornamento scripts aziona:
-##   make update-scripts		
-update-scripts:
-	git pull && ./scripts/setup.py --only-scripts 
+exec-dependencies:
+	python scripts/dependencies.py
